@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.jobportalapp'
+    namespace 'com.swapnil.jobportal'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.example.jobportalapp"
+        applicationId "com.swapnil.jobportal"
         minSdk 31
         targetSdk 35
         versionCode 1
