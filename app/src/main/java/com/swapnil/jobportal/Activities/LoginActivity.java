@@ -129,6 +129,7 @@ public class LoginActivity extends AppCompatActivity {
                             Intent intent = new Intent(LoginActivity.this, RoleActivity.class);
                             intent.putExtra("userId", userId);
                             startActivity(intent);
+                            finish();
                         }
                     }
 
@@ -144,12 +145,14 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        finish();
     }
 
     private void navigateToAdminDashboard() {
         Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        finish();
     }
 
     private void showToast(String message) {
