@@ -1,7 +1,7 @@
 package com.swapnil.jobportal.Adapters;
 
-import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,61 +10,85 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.swapnil.jobportal.Activities.JobDetailsActivity;
-import com.swapnil.jobportal.Model.Model;
-import com.swapnil.jobportal.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.swapnil.jobportal.Activities.JobDetailsActivity;
+import com.swapnil.jobportal.Model.JobModel;
+import com.swapnil.jobportal.R;
 
-public class JobsAdapter extends FirebaseRecyclerAdapter<Model, JobsAdapter.Viewholder> {
+/**
+ * JobsAdapter — displays job listings in the DisplayJobFragment RecyclerView.
+ * Each item shows company name, job title, salary, last date, and total openings.
+ * Clicking a job navigates to JobDetailsActivity with full job details.
+ */
+public class JobsAdapter extends FirebaseRecyclerAdapter<JobModel, JobsAdapter.ViewHolder> {
 
-    public JobsAdapter(FirebaseRecyclerOptions<Model> options) {
+    private final TextView emptyStateTv;
+
+    public JobsAdapter(@NonNull FirebaseRecyclerOptions<JobModel> options, TextView emptyStateTv) {
         super(options);
-    }
-
-    @Override
-    protected void onBindViewHolder(@NonNull Viewholder holder, int position, @NonNull Model model) {
-        Context context = holder.itemView.getContext();
-
-        // Show readable text
-        holder.txtTitle.setText("Job Title: " + model.getJobTitle());
-        holder.txtDesc.setText("Salary: " + model.getJobSalary());
-
-        // Click event for navigating to job details
-        holder.txtTitle.setOnClickListener(view -> {
-            Intent intent = new Intent(context, JobDetailsActivity.class);
-
-            // Only pass raw data, format in UI later
-            intent.putExtra("companyName", model.getCompanyName());
-            intent.putExtra("jobTitle", model.getJobTitle());
-            intent.putExtra("jobDescription", model.getAboutJob());
-            intent.putExtra("jobSalary", model.getJobSalary());
-            intent.putExtra("startDate", model.getJobStartDate());
-            intent.putExtra("lastDate", model.getJobLastDate());
-            intent.putExtra("totalOpenings", model.getTotalOpenings());
-            intent.putExtra("requiredSkills", model.getSkillsRequired());
-            intent.putExtra("additionalInfo", model.getAdditionalInfo());
-            intent.putExtra("userId", model.getAdminId()); // ⚠️ This is admin ID
-
-            context.startActivity(intent);
-        });
+        this.emptyStateTv = emptyStateTv;
     }
 
     @NonNull
     @Override
-    public Viewholder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_data_file, parent, false);
-        return new Viewholder(view);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.single_data_file, parent, false);
+        return new ViewHolder(view);
     }
 
-    public static class Viewholder extends RecyclerView.ViewHolder {
+    @Override
+    protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull JobModel model) {
+        holder.companyNameTv.setText(model.getCompanyName());
+        holder.jobTitleTv.setText(model.getJobTitle());
+        holder.jobSalaryTv.setText("Salary: " + model.getJobSalary());
+        holder.jobLastDateTv.setText("Apply By: " + model.getJobLastDate());
+        holder.totalOpeningsTv.setText("Openings: " + model.getTotalOpenings());
 
-        TextView txtTitle, txtDesc;
+        // On item click → open JobDetailsActivity with all job data
+        holder.itemView.setOnClickListener(view -> {
+            Intent intent = new Intent(view.getContext(), JobDetailsActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("companyName", model.getCompanyName());
+            bundle.putString("jobTitle", model.getJobTitle());
+            bundle.putString("jobDescription", model.getAboutJob());
+            bundle.putString("jobSalary", model.getJobSalary());
+            bundle.putString("startDate", model.getJobStartDate());
+            bundle.putString("lastDate", model.getJobLastDate());
+            bundle.putString("totalOpenings", model.getTotalOpenings());
+            bundle.putString("requiredSkills", model.getSkillsRequired());
+            bundle.putString("additionalInfo", model.getAdditionalInfo());
+            bundle.putString("userId", model.getAdminId());   // key "userId" holds adminId per spec
+            bundle.putString("jobId", model.getJobId());
+            intent.putExtras(bundle);
+            view.getContext().startActivity(intent);
+        });
+    }
 
-        public Viewholder(@NonNull View itemView) {
+    @Override
+    public void onDataChanged() {
+        super.onDataChanged();
+        // Show or hide empty state based on item count
+        if (emptyStateTv != null) {
+            emptyStateTv.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView companyNameTv;
+        TextView jobTitleTv;
+        TextView jobSalaryTv;
+        TextView jobLastDateTv;
+        TextView totalOpeningsTv;
+
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            txtTitle = itemView.findViewById(R.id.Title);
-            txtDesc = itemView.findViewById(R.id.Desc);
+            companyNameTv = itemView.findViewById(R.id.CompanyNameTv);
+            jobTitleTv = itemView.findViewById(R.id.JobTitleTv);
+            jobSalaryTv = itemView.findViewById(R.id.JobSalaryTv);
+            jobLastDateTv = itemView.findViewById(R.id.JobLastDateTv);
+            totalOpeningsTv = itemView.findViewById(R.id.TotalOpeningsTv);
         }
     }
 }

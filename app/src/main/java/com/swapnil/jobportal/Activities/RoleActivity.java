@@ -2,86 +2,123 @@ package com.swapnil.jobportal.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.swapnil.jobportal.MainActivity;
 import com.swapnil.jobportal.R;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.FirebaseDatabase;
 
+/**
+ * RoleActivity — lets new users choose their role (Job Seeker or Admin).
+ * Admin role requires a secret code for security.
+ */
 public class RoleActivity extends AppCompatActivity {
 
-    private static final String ROLE_JOB_SEEKER = "jobseeker";
-    private static final String ROLE_ADMIN = "admin";
+    private static final String ADMIN_SECRET_CODE = "ADMIN123";
 
+    private Button jobSeekerBtn;
+    private Button adminBtn;
     private ProgressBar progressBar;
+
+    private FirebaseAuth firebaseAuth;
+    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_role);
 
-        // Initialize Firebase Authentication
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        String userId = firebaseAuth.getCurrentUser() != null ? firebaseAuth.getCurrentUser().getUid() : null;
+        firebaseAuth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
-        // If the user is not logged in, redirect to login activity
-        if (userId == null) {
-            redirectToLogin();
+        jobSeekerBtn = findViewById(R.id.JobSeekerBtn);
+        adminBtn = findViewById(R.id.AdminBtn);
+        progressBar = findViewById(R.id.ProgressBar);
+
+        progressBar.setVisibility(View.INVISIBLE);
+
+        // Job Seeker — straightforward role assignment
+        jobSeekerBtn.setOnClickListener(view -> saveRole("jobseeker"));
+
+        // Admin — requires secret code verification
+        adminBtn.setOnClickListener(view -> showAdminCodeDialog());
+    }
+
+    /**
+     * Shows an AlertDialog asking for the admin secret code before assigning admin role.
+     */
+    private void showAdminCodeDialog() {
+        EditText codeInput = new EditText(this);
+        codeInput.setHint("Enter admin code");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Admin Verification")
+                .setMessage("Please enter the admin access code to continue:")
+                .setView(codeInput)
+                .setPositiveButton("Verify", (dialog, which) -> {
+                    String enteredCode = codeInput.getText().toString().trim();
+                    if (enteredCode.equals(ADMIN_SECRET_CODE)) {
+                        saveRole("admin");
+                    } else {
+                        Toast.makeText(this, "Invalid admin code. Access denied.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+    /**
+     * Saves the selected role to the Firebase database under users/{uid}/role.
+     */
+    private void saveRole(String role) {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Session expired. Please log in again.", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
             return;
         }
 
-        // Initialize ProgressBar
-        progressBar = findViewById(R.id.r_bar);
-        progressBar.setVisibility(ProgressBar.INVISIBLE); // Use INVISIBLE instead of GONE for better reusability
+        progressBar.setVisibility(View.VISIBLE);
+        jobSeekerBtn.setEnabled(false);
+        adminBtn.setEnabled(false);
 
-        // Initialize buttons
-        Button jobSeekerBtn = findViewById(R.id.JobSeekerBtn);
-        Button adminBtn = findViewById(R.id.AdminBtn);
+        String userId = currentUser.getUid();
 
-        // Set role as Job Seeker
-        jobSeekerBtn.setOnClickListener(view -> setUserRole(userId, ROLE_JOB_SEEKER, MainActivity.class));
+        databaseReference.child(userId).child("role").setValue(role)
+                .addOnSuccessListener(unused -> {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    jobSeekerBtn.setEnabled(true);
+                    adminBtn.setEnabled(true);
 
-        // Set role as Admin
-        adminBtn.setOnClickListener(view -> setUserRole(userId, ROLE_ADMIN, AdminActivity.class));
-    }
-
-    /**
-     * Helper method to set the user role and navigate to the respective activity.
-     * @param userId - The user ID of the logged-in user.
-     * @param role - The role to set for the user (jobseeker or admin).
-     * @param nextActivity - The next activity to navigate to after setting the role.
-     */
-    private void setUserRole(String userId, String role, Class<?> nextActivity) {
-        progressBar.setVisibility(ProgressBar.VISIBLE);  // Show the progress bar while processing
-
-        FirebaseDatabase.getInstance().getReference().child("users")
-                .child(userId)
-                .child("role")
-                .setValue(role)
-                .addOnCompleteListener(task -> {
-                    progressBar.setVisibility(ProgressBar.INVISIBLE);  // Hide the progress bar when done
-                    if (task.isSuccessful()) {
-                        // Navigate to the corresponding activity based on the role
-                        Intent intent = new Intent(getApplicationContext(), nextActivity);
+                    // Navigate to the correct dashboard
+                    if (role.equals("admin")) {
+                        Intent intent = new Intent(RoleActivity.this, AdminActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
+                        finish();
                     } else {
-                        // Handle the error if something goes wrong
-                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Unknown error occurred.";
-                        Toast.makeText(RoleActivity.this, "Failed to update role: " + errorMessage, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(RoleActivity.this, MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
                     }
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    jobSeekerBtn.setEnabled(true);
+                    adminBtn.setEnabled(true);
+                    Toast.makeText(this, "Failed to save role. Please try again.", Toast.LENGTH_SHORT).show();
                 });
-    }
-
-    /**
-     * Redirect to the Login activity if the user is not logged in.
-     */
-    private void redirectToLogin() {
-        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-        startActivity(intent);
     }
 }

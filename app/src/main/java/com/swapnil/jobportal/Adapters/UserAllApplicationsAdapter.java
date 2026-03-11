@@ -1,7 +1,6 @@
 package com.swapnil.jobportal.Adapters;
 
-import android.content.Context;
-import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,64 +9,82 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.swapnil.jobportal.Activities.JobDetailsActivity;  // Assuming you want to open a job details activity
-import com.swapnil.jobportal.Model.Model;
-import com.swapnil.jobportal.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.swapnil.jobportal.Model.ApplicationModel;
+import com.swapnil.jobportal.R;
 
-public class UserAllApplicationsAdapter extends FirebaseRecyclerAdapter<Model, UserAllApplicationsAdapter.Viewholder> {
+/**
+ * UserAllApplicationsAdapter — displays all of a job seeker's applications.
+ * Status is color coded: pending=orange, selected=green, rejected=red.
+ */
+public class UserAllApplicationsAdapter
+        extends FirebaseRecyclerAdapter<ApplicationModel, UserAllApplicationsAdapter.ViewHolder> {
 
-    public UserAllApplicationsAdapter(@NonNull FirebaseRecyclerOptions<Model> options) {
+    private final TextView emptyStateTv;
+
+    public UserAllApplicationsAdapter(@NonNull FirebaseRecyclerOptions<ApplicationModel> options,
+                                      TextView emptyStateTv) {
         super(options);
-    }
-
-    @Override
-    protected void onBindViewHolder(@NonNull UserAllApplicationsAdapter.Viewholder holder, int position, @NonNull Model model) {
-        Context context = holder.itemView.getContext();  // More reliable context retrieval
-
-        // For loading applications of a user into RecyclerView
-        holder.txtTitle.setText("Company Name:"+model.getCompanyName());
-        holder.txtDesc.setText("Job Title:"+model.getJobTitle());
-
-        // OnClickListener to open job details
-//        holder.txtTitle.setOnClickListener(view -> {
-//            // Ensure data exists before passing it
-//            Intent intent = new Intent(context, JobDetailsActivity.class);
-//            intent.putExtra("companyName", model.getCompanyName());
-//            intent.putExtra("jobTitle", model.getJobTitle());
-//            intent.putExtra("jobDescription", model.getAboutJob());
-//            intent.putExtra("jobSalary", model.getJobSalary());
-//            intent.putExtra("startDate", model.getJobStartDate());
-//            intent.putExtra("lastDate", model.getJobLastDate());
-//            intent.putExtra("totalOpenings", model.getTotalOpenings());
-//            intent.putExtra("requiredSkills", model.getSkillsRequired());
-//            intent.putExtra("additionalInfo", model.getAdditionalInfo());
-//            intent.putExtra("userId", model.getAdminId());
-//
-//            context.startActivity(intent); // Starting JobDetailsActivity
-//        });
+        this.emptyStateTv = emptyStateTv;
     }
 
     @NonNull
     @Override
-    public UserAllApplicationsAdapter.Viewholder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflating the data objects into the XML file single_data_item
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_data_file, parent, false);
-        return new Viewholder(view);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.admin_job_application_accept_file, parent, false);
+        return new ViewHolder(view);
     }
 
-    // Viewholder to hold each object from RecyclerView and display it
-    public static class Viewholder extends RecyclerView.ViewHolder {
-        TextView txtTitle;
-        TextView txtDesc;
+    @Override
+    protected void onBindViewHolder(@NonNull ViewHolder holder, int position,
+                                    @NonNull ApplicationModel model) {
+        holder.jobTitleTv.setText(model.getJobTitle());
+        holder.companyNameTv.setText(model.getCompanyName());
+        holder.statusTv.setText(model.getStatus());
 
-        public Viewholder(View itemView) {
+        // Color code the status badge
+        applyStatusColor(holder.statusTv, model.getStatus());
+    }
+
+    /**
+     * Applies color to the status TextView based on application status.
+     */
+    private void applyStatusColor(TextView statusTv, String status) {
+        if (status == null) return;
+        switch (status.toLowerCase()) {
+            case "selected":
+                statusTv.setTextColor(Color.parseColor("#4CAF50")); // green
+                break;
+            case "rejected":
+                statusTv.setTextColor(Color.parseColor("#F44336")); // red
+                break;
+            case "pending":
+            default:
+                statusTv.setTextColor(Color.parseColor("#FF9800")); // orange
+                break;
+        }
+    }
+
+    @Override
+    public void onDataChanged() {
+        super.onDataChanged();
+        if (emptyStateTv != null) {
+            emptyStateTv.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView jobTitleTv;
+        TextView companyNameTv;
+        TextView statusTv;
+
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            // Assigning the address of the materials
-            txtTitle = itemView.findViewById(R.id.Title);
-            txtDesc = itemView.findViewById(R.id.Desc);
+            jobTitleTv = itemView.findViewById(R.id.JobTitleTv);
+            companyNameTv = itemView.findViewById(R.id.CompanyNameTv);
+            statusTv = itemView.findViewById(R.id.StatusTv);
         }
     }
 }

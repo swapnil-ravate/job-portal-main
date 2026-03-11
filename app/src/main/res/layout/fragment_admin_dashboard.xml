@@ -1,37 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    tools:ignore="HardcodedText"
     android:layout_height="match_parent"
-    android:background="@drawable/jobi"
     android:orientation="vertical"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".Fragments.AdminDashboardFragment"
-    android:padding="16dp">
+    android:background="#F5F5F5">
 
-    <!-- Switch to toggle between Placed Applications and All Applications -->
-    <androidx.appcompat.widget.SwitchCompat
-        android:id="@+id/AdminDashBoardSwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:thumb="@drawable/thumb"
-        app:track="@drawable/track"
-        app:showText="true"
-        android:textOn="Accepted  Applications"
-        android:textOff="Requested Applications"
-        android:textSize="16sp"
-        android:textColor="#000"
-        android:layout_gravity="center"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="20dp" />
-
-    <!-- Container for content that will change based on the switch state -->
-    <FrameLayout
-        android:id="@+id/AdminDashBoardContainer"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="20dp"
-        android:layout_weight="1" /> <!-- Ensuring it takes available space while adjusting based on the switch -->
+        android:layout_height="wrap_content"
+        android:text="All Applications"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"
+        android:padding="16dp" />
+
+    <TextView
+        android:id="@+id/EmptyStateTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No applications received yet."
+        android:textSize="16sp"
+        android:textColor="#888888"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/ApplicationsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        android:clipToPadding="false" />
 
 </LinearLayout>

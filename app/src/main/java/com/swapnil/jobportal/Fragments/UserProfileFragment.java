@@ -1,9 +1,7 @@
 package com.swapnil.jobportal.Fragments;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,76 +9,63 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.swapnil.jobportal.Activities.StartingActivity;
-import com.swapnil.jobportal.R;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
+import com.swapnil.jobportal.Activities.StartingActivity;
+import com.swapnil.jobportal.R;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+/**
+ * UserProfileFragment — displays the current user's profile info and provides sign-out.
+ */
 public class UserProfileFragment extends Fragment {
 
-    TextView userName;
-    Button signOutBtn;
-
-    public UserProfileFragment() {
-        // Required empty public constructor
-    }
-
-    @SuppressLint("SetTextI18n")
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_user_profile, container, false);
 
-        // Initialize views
-        CircleImageView imageView = view.findViewById(R.id.UserProfileImg);
-        userName = view.findViewById(R.id.UserNameTxt);
-        signOutBtn = view.findViewById(R.id.UserSignOutBtn);
+        CircleImageView profileImageView = view.findViewById(R.id.ProfileImageView);
+        TextView displayNameTv = view.findViewById(R.id.DisplayNameTv);
+        TextView emailTv = view.findViewById(R.id.EmailTv);
+        Button signOutBtn = view.findViewById(R.id.SignOutBtn);
 
-        // Fetch the current user from Firebase Authentication
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser != null) {
-            // Set the username
-            String displayName = currentUser.getDisplayName();
-            userName.setText(displayName != null ? displayName : "User");
 
-            // Set profile picture if available
+        if (currentUser != null) {
+            // Display name: use displayName if available, fallback to email
+            String name = currentUser.getDisplayName();
+            if (name == null || name.isEmpty()) {
+                name = currentUser.getEmail();
+            }
+            displayNameTv.setText(name);
+            emailTv.setText(currentUser.getEmail());
+
+            // Load profile photo with Picasso if available
             if (currentUser.getPhotoUrl() != null) {
                 Picasso.get()
                         .load(currentUser.getPhotoUrl())
-                        .placeholder(R.drawable.img)  // Placeholder for the profile picture
-                        .error(R.drawable.error_image)  // Error image if the URL is invalid
-                        .into(imageView);
-            } else {
-                // Set a default image if no profile picture exists
-                imageView.setImageResource(R.drawable.profile_icon);
+                        .placeholder(R.drawable.ic_default_profile)
+                        .error(R.drawable.ic_default_profile)
+                        .into(profileImageView);
             }
-        } else {
-            // Handle the case where the user is not logged in
-            userName.setText("Guest");
-            imageView.setImageResource(R.drawable.profile_icon);  // Set a default image if no user is logged in
         }
 
-        // Implement sign-out functionality
-        signOutBtn.setOnClickListener(view1 -> signOut());
+        signOutBtn.setOnClickListener(view1 -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(getActivity(), StartingActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            if (getActivity() != null) getActivity().finish();
+        });
 
         return view;
-    }
-
-    // Method to handle user sign out
-    private void signOut() {
-        // Sign out from Firebase Authentication
-        FirebaseAuth.getInstance().signOut();
-
-        // Show a confirmation message (toast)
-        Toast.makeText(getContext(), "You have been signed out.", Toast.LENGTH_SHORT).show();
-
-        // Redirect to StartingActivity after sign-out
-        Intent intent = new Intent(getActivity(), StartingActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
     }
 }

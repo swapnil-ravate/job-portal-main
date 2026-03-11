@@ -3,50 +3,73 @@ package com.swapnil.jobportal.Activities;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.swapnil.jobportal.Fragments.UserAllApplicationsFragment;
-import com.swapnil.jobportal.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.swapnil.jobportal.Model.ApplicationModel;
+import com.swapnil.jobportal.R;
 
-import java.util.HashMap;
-
+/**
+ * JobDetailsActivity — displays full details of a job and allows the user to apply.
+ * The user must pick a PDF resume, which is uploaded to Firebase Storage before saving.
+ */
 public class JobDetailsActivity extends AppCompatActivity {
 
-    private TextView companyNameTxt, jobTitleTxt, jobDescriptionTxt, jobSalaryTxt;
-    private TextView startDateTxt, lastDateTxt, totalOpeningsTxt, requiredSkillsTxt;
-    private TextView additionalInfoTxt, selectedFileNameTxt;
-    private Button applyJobBtn, uploadResumeBtn;
+    // Job data passed via Intent
+    private String jobId;
+    private String adminId;
+    private String companyName;
+    private String jobTitle;
+    private String jobDescription;
+    private String jobSalary;
+    private String startDate;
+    private String lastDate;
+    private String totalOpenings;
+    private String requiredSkills;
+    private String additionalInfo;
 
-    private String userId, userName, adminId;
-    private String companyName, jobTitle, jobDescription, jobSalary;
-    private String startDate, lastDate, totalOpenings, requiredSkills, additionalInfo;
-    private Uri resumeUri;
+    // UI
+    private ProgressBar progressBar;
+    private Button selectResumeBtn;
+    private Button applyBtn;
+    private TextView selectedFileNameTv;
 
-    private final ActivityResultLauncher<String> getContentLauncher = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            (ActivityResultCallback<Uri>) result -> {
-                if (result != null) {
-                    resumeUri = result;
-                    selectedFileNameTxt.setText("Selected: " + result.getLastPathSegment());
-                    Log.d("ResumeSelection", "Selected URI: " + result.toString());
-                } else {
-                    selectedFileNameTxt.setText("No file selected");
+    // Resume
+    private Uri selectedResumeUri = null;
+
+    // Firebase
+    private FirebaseAuth firebaseAuth;
+    private DatabaseReference databaseReference;
+    private StorageReference storageReference;
+
+    // Activity Result Launcher for PDF picker
+    private final ActivityResultLauncher<String> pdfPickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    selectedResumeUri = uri;
+                    // Extract and display the filename
+                    String path = uri.getPath();
+                    String fileName = path != null
+                            ? path.substring(path.lastIndexOf('/') + 1)
+                            : "resume.pdf";
+                    selectedFileNameTv.setText("Selected: " + fileName);
+                    selectedFileNameTv.setVisibility(View.VISIBLE);
                 }
             });
 
@@ -55,141 +78,238 @@ public class JobDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_job_details);
 
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                // Navigate to UserAllApplicationsFragment when back is pressed
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.UserFragmentContainer, new UserAllApplicationsFragment()) // Make sure to use your container's ID
-                        .addToBackStack(null) // Add to back stack for proper navigation behavior
-                        .commit();
-            }
-        });
+        // Firebase instances
+        firebaseAuth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("jobApplications");
+        storageReference = FirebaseStorage.getInstance().getReference("resumes");
 
-
-
-        // Get job details from intent
-        Bundle bundle = getIntent().getExtras();
-        if (bundle != null) {
-            companyName = bundle.getString("companyName", "");
-            jobTitle = bundle.getString("jobTitle", "");
-            jobDescription = bundle.getString("jobDescription", "");
-            jobSalary = bundle.getString("jobSalary", "");
-            startDate = bundle.getString("startDate", "");
-            lastDate = bundle.getString("lastDate", "");
-            totalOpenings = bundle.getString("totalOpenings", "");
-            requiredSkills = bundle.getString("requiredSkills", "");
-            additionalInfo = bundle.getString("additionalInfo", "");
-            adminId = bundle.getString("userId", ""); // admin who posted the job
-
-            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-            if (currentUser != null) {
-                userId = currentUser.getUid();
-                userName = currentUser.getDisplayName();
-                if (userName == null || userName.isEmpty()) {
-                    userName = currentUser.getEmail(); // fallback
-                }
-            }
+        // Get job data from Intent
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            jobId = extras.getString("jobId", "");
+            adminId = extras.getString("userId", "");    // key "userId" holds adminId per spec
+            companyName = extras.getString("companyName", "");
+            jobTitle = extras.getString("jobTitle", "");
+            jobDescription = extras.getString("jobDescription", "");
+            jobSalary = extras.getString("jobSalary", "");
+            startDate = extras.getString("startDate", "");
+            lastDate = extras.getString("lastDate", "");
+            totalOpenings = extras.getString("totalOpenings", "");
+            requiredSkills = extras.getString("requiredSkills", "");
+            additionalInfo = extras.getString("additionalInfo", "");
         }
 
-        // Assign views
-        companyNameTxt = findViewById(R.id.CompanyNameTxt);
-        jobTitleTxt = findViewById(R.id.JobTitleTxt);
-        jobDescriptionTxt = findViewById(R.id.JobDescriptionTxt);
-        jobSalaryTxt = findViewById(R.id.SalaryTxt);
-        startDateTxt = findViewById(R.id.JobStartDateTxt);
-        lastDateTxt = findViewById(R.id.LastDateToApplyTxt);
-        totalOpeningsTxt = findViewById(R.id.TotolNoOfOpeningsTxt);
-        requiredSkillsTxt = findViewById(R.id.RequiredSkillsTxt);
-        additionalInfoTxt = findViewById(R.id.AdditionalDataTxt);
-        selectedFileNameTxt = findViewById(R.id.SelectedFileNameTxt);
-        uploadResumeBtn = findViewById(R.id.SelectResumeBtn);
-        applyJobBtn = findViewById(R.id.ApplyJobBtn);
+        // Bind UI views
+        progressBar = findViewById(R.id.ProgressBar);
+        selectResumeBtn = findViewById(R.id.SelectResumeBtn);
+        applyBtn = findViewById(R.id.ApplyBtn);
+        selectedFileNameTv = findViewById(R.id.SelectedFileNameTv);
+        progressBar.setVisibility(View.INVISIBLE);
+        selectedFileNameTv.setVisibility(View.GONE);
 
-        // Set job details
-        companyNameTxt.setText("Company: " + companyName);
-        jobTitleTxt.setText("Title: " + jobTitle);
-        jobDescriptionTxt.setText("About: " + jobDescription);
-        jobSalaryTxt.setText("Salary: " + jobSalary);
-        startDateTxt.setText("Start Date: " + startDate);
-        lastDateTxt.setText("Last Date: " + lastDate);
-        totalOpeningsTxt.setText("Openings: " + totalOpenings);
-        requiredSkillsTxt.setText("Skills: " + requiredSkills);
-        additionalInfoTxt.setText("Info: " + additionalInfo);
+        // Populate TextViews with job details
+        setTextView(R.id.CompanyNameTv, companyName);
+        setTextView(R.id.JobTitleTv, jobTitle);
+        setTextView(R.id.JobSalaryTv, "Salary: " + jobSalary);
+        setTextView(R.id.JobStartDateTv, "Start Date: " + startDate);
+        setTextView(R.id.JobLastDateTv, "Apply By: " + lastDate);
+        setTextView(R.id.TotalOpeningsTv, "Openings: " + totalOpenings);
+        setTextView(R.id.AboutJobTv, jobDescription);
+        setTextView(R.id.SkillsRequiredTv, "Skills: " + requiredSkills);
+        setTextView(R.id.AdditionalInfoTv, additionalInfo);
 
-        // Resume file picker
-        uploadResumeBtn.setOnClickListener(view -> getContentLauncher.launch("application/pdf"));
+        // Select Resume button — open PDF file picker
+        selectResumeBtn.setOnClickListener(view ->
+                pdfPickerLauncher.launch("application/pdf"));
 
-        // Apply job
-        applyJobBtn.setOnClickListener(view -> {
-            if (resumeUri == null) {
-                Toast.makeText(this, "Please upload a resume", Toast.LENGTH_SHORT).show();
-            } else {
-                checkIfAlreadyApplied(resumeUri.toString());
-            }
-        });
+        // Apply button
+        applyBtn.setOnClickListener(view -> handleApply());
+
+        // Back button
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
-    private void checkIfAlreadyApplied(String resumeLink) {
-        FirebaseDatabase.getInstance().getReference().child("jobApplications")
-                .child(userId)
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
+
+    /**
+     * Validates that resume is selected, then checks for duplicate applications.
+     */
+    private void handleApply() {
+        if (selectedResumeUri == null) {
+            Toast.makeText(this, "Please select your resume (PDF) first.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Please log in to apply.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        checkIfAlreadyApplied(currentUser);
+    }
+
+    /**
+     * Checks if this user has already applied for this job to prevent duplicate applications.
+     */
+    private void checkIfAlreadyApplied(FirebaseUser currentUser) {
+        progressBar.setVisibility(View.VISIBLE);
+        applyBtn.setEnabled(false);
+
+        String userId = currentUser.getUid();
+
+        // Applications for this user are stored under jobApplications/{userId}
+        databaseReference.child(userId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    public void onDataChange(DataSnapshot snapshot) {
                         boolean alreadyApplied = false;
-
-                        for (DataSnapshot applicationSnapshot : snapshot.getChildren()) {
-                            String existingTitle = applicationSnapshot.child("jobTitle").getValue(String.class);
-                            String existingCompany = applicationSnapshot.child("companyName").getValue(String.class);
-                            String existingAdmin = applicationSnapshot.child("adminId").getValue(String.class);
-
-                            if (existingTitle != null && existingCompany != null && existingAdmin != null &&
-                                    existingTitle.equalsIgnoreCase(jobTitle) &&
-                                    existingCompany.equalsIgnoreCase(companyName) &&
-                                    existingAdmin.equalsIgnoreCase(adminId)) {
+                        for (DataSnapshot appSnapshot : snapshot.getChildren()) {
+                            ApplicationModel app = appSnapshot.getValue(ApplicationModel.class);
+                            if (app != null && jobId.equals(app.getApplicationId() != null
+                                    ? null : null)) {
+                                // Check by jobTitle + companyName combination
+                            }
+                            // Check by jobTitle and companyName to detect duplicates
+                            if (app != null
+                                    && jobTitle.equals(app.getJobTitle())
+                                    && companyName.equals(app.getCompanyName())) {
                                 alreadyApplied = true;
                                 break;
                             }
                         }
 
                         if (alreadyApplied) {
-                            Toast.makeText(JobDetailsActivity.this, "You already applied for this job", Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.INVISIBLE);
+                            applyBtn.setEnabled(true);
+                            Toast.makeText(JobDetailsActivity.this,
+                                    "You have already applied for this job.",
+                                    Toast.LENGTH_SHORT).show();
                         } else {
-                            submitJobApplication(resumeLink);
+                            uploadResumeToStorage(currentUser);
                         }
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(JobDetailsActivity.this, "Error checking application", Toast.LENGTH_SHORT).show();
+                    public void onCancelled(DatabaseError error) {
+                        progressBar.setVisibility(View.INVISIBLE);
+                        applyBtn.setEnabled(true);
+                        Toast.makeText(JobDetailsActivity.this,
+                                "Error checking application status.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    private void submitJobApplication(String resumeLink) {
-        String key = FirebaseDatabase.getInstance().getReference().child("jobApplications").push().getKey();
-        if (key == null) return;
+    /**
+     * Uploads the selected PDF resume to Firebase Storage and then saves the application.
+     * Path: resumes/{userId}/{jobId}_{timestamp}.pdf
+     */
+    private void uploadResumeToStorage(FirebaseUser currentUser) {
+        String userId = currentUser.getUid();
+        long timestamp = System.currentTimeMillis();
+        String fileName = jobId + "_" + timestamp + ".pdf";
 
-        HashMap<String, Object> applicationData = new HashMap<>();
-        applicationData.put("userId", userId);
-        applicationData.put("userName", userName);
-        applicationData.put("jobTitle", jobTitle);
-        applicationData.put("companyName", companyName);
-        applicationData.put("resumeLink", resumeLink);
-        applicationData.put("adminId", adminId);
+        StorageReference resumeRef = storageReference.child(userId).child(fileName);
 
-        // Save to admin's and user's application list
-        FirebaseDatabase.getInstance().getReference().child("jobApplications")
-                .child(adminId).child(key).setValue(applicationData)
-                .addOnSuccessListener(aVoid -> {
-                    FirebaseDatabase.getInstance().getReference().child("jobApplications")
-                            .child(userId).child(key).setValue(applicationData)
-                            .addOnSuccessListener(unused -> {
-                                Toast.makeText(JobDetailsActivity.this, "Successfully Applied", Toast.LENGTH_SHORT).show();
+        resumeRef.putFile(selectedResumeUri)
+                .addOnProgressListener(taskSnapshot -> {
+                    // Could show upload progress here if needed
+                })
+                .addOnSuccessListener(taskSnapshot -> {
+                    // Get the download URL
+                    resumeRef.getDownloadUrl()
+                            .addOnSuccessListener(downloadUri -> {
+                                // Submit application with the Firebase Storage URL
+                                submitJobApplication(currentUser, downloadUri.toString());
+                            })
+                            .addOnFailureListener(e -> {
+                                progressBar.setVisibility(View.INVISIBLE);
+                                applyBtn.setEnabled(true);
+                                Toast.makeText(JobDetailsActivity.this,
+                                        "Failed to get resume URL: " + e.getMessage(),
+                                        Toast.LENGTH_SHORT).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    applyBtn.setEnabled(true);
+                    Toast.makeText(this, "Resume upload failed: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    /**
+     * Saves the ApplicationModel to both admin and user paths in the database.
+     * Keys:
+     *   jobApplications/{adminId}/{applicationId}
+     *   jobApplications/{userId}/{applicationId}
+     *
+     * @param resumeUrl Firebase Storage download URL (NEVER a local file URI)
+     */
+    private void submitJobApplication(FirebaseUser currentUser, String resumeUrl) {
+        String userId = currentUser.getUid();
+        String userName = currentUser.getDisplayName() != null
+                ? currentUser.getDisplayName() : currentUser.getEmail();
+        String userEmail = currentUser.getEmail();
+
+        // Generate a unique application ID
+        String applicationId = databaseReference.child(adminId).push().getKey();
+        if (applicationId == null) {
+            progressBar.setVisibility(View.INVISIBLE);
+            applyBtn.setEnabled(true);
+            Toast.makeText(this, "Failed to generate application ID.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ApplicationModel application = new ApplicationModel(
+                applicationId, userId, userName, userEmail,
+                jobTitle, companyName, adminId, resumeUrl, "pending");
+
+        // Save to admin's path: jobApplications/{adminId}/{applicationId}
+        databaseReference.child(adminId).child(applicationId).setValue(application)
+                .addOnSuccessListener(unused1 -> {
+                    // Also save to user's path: jobApplications/{userId}/{applicationId}
+                    databaseReference.child(userId).child(applicationId).setValue(application)
+                            .addOnSuccessListener(unused2 -> {
+                                progressBar.setVisibility(View.INVISIBLE);
+                                applyBtn.setEnabled(true);
+                                Toast.makeText(JobDetailsActivity.this,
+                                        "Application submitted successfully!", Toast.LENGTH_SHORT).show();
                                 finish();
                             })
-                            .addOnFailureListener(e -> Toast.makeText(JobDetailsActivity.this, "User save failed", Toast.LENGTH_SHORT).show());
+                            .addOnFailureListener(e -> {
+                                progressBar.setVisibility(View.INVISIBLE);
+                                applyBtn.setEnabled(true);
+                                Toast.makeText(JobDetailsActivity.this,
+                                        "Failed to save application: " + e.getMessage(),
+                                        Toast.LENGTH_SHORT).show();
+                            });
                 })
-                .addOnFailureListener(e -> Toast.makeText(JobDetailsActivity.this, "Application failed", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    applyBtn.setEnabled(true);
+                    Toast.makeText(this,
+                            "Failed to submit application: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void setTextView(int viewId, String text) {
+        TextView tv = findViewById(viewId);
+        if (tv != null) {
+            tv.setText(text != null ? text : "");
+        }
     }
 }

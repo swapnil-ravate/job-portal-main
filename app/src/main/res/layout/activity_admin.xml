@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:orientation="vertical"
+    android:background="@color/white">
 
-    <!-- Container for Fragments -->
+    <!-- Fragment Container -->
     <FrameLayout
-        android:id="@+id/AdminFragmentContainer"
+        android:id="@+id/FragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/AdminBottomNavigationView"
-        android:layout_alignParentTop="true"/>
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-    <!-- Bottom Navigation Menu -->
+    <!-- Bottom Navigation View for Admin -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/AdminBottomNavigationView"
+        android:id="@+id/BottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        app:menu="@menu/bottom_navigation_menu" />
+        android:background="@color/white"
+        app:menu="@menu/bottom_nav_admin_menu"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
 
-</RelativeLayout>
+</LinearLayout>

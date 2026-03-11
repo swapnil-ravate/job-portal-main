@@ -1,169 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    tools:ignore="HardcodedText"
-    tools:context=".Fragments.AddJobFragment">
+    android:background="#F5F5F5">
 
-    <!-- LinearLayout directly wrapping the content -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@drawable/jobi"
         android:padding="16dp">
 
-        <!-- Company Name Input -->
-        <EditText
-            android:id="@+id/CompanyNameEditTxt"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:hint="Company Name"
-            android:autofillHints="organization"
-            android:minHeight="48dp"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:background="@drawable/edittext_background"/>
+            android:text="Post a Job"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginBottom="16dp" />
 
-        <!-- Job Title Input -->
-        <EditText
-            android:id="@+id/JobTitleEditTxt"
+        <!-- Company Name -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:hint="Job Title"
-            android:autofillHints="jobTitle"
-            android:minHeight="48dp"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:background="@drawable/edittext_background"/>
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/CompanyNameEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Company Name" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Job Salary Input -->
-        <EditText
-            android:id="@+id/JobSalaryEditTxt"
+        <!-- Job Title -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
-            android:hint="Job Salary"
-            android:autofillHints="none"
-            android:minHeight="48dp"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:background="@drawable/edittext_background"/>
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/JobTitleEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Job Title" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Job Start Date Input -->
-        <EditText
-            android:id="@+id/JobStartDateEditTxt"
+        <!-- Salary -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="date"
-            android:hint="Start Date"
-            android:autofillHints="none"
-            android:minHeight="48dp"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:background="@drawable/edittext_background"/>
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/JobSalaryEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Salary" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Job Last Date to Apply Input -->
-        <EditText
-            android:id="@+id/JobLastDateEditTxt"
+        <!-- Start Date -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="date"
-            android:hint="Apply By"
-            android:autofillHints="none"
-            android:minHeight="48dp"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:background="@drawable/edittext_background"/>
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/JobStartDateEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Start Date (e.g. 01/06/2025)" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Total Openings Input -->
-        <EditText
-            android:id="@+id/TotalOpeningsEditTxt"
+        <!-- Last Date -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="No of Openings"
-            android:autofillHints="none"
-            android:minHeight="48dp"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:background="@drawable/edittext_background"/>
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/JobLastDateEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Last Date to Apply" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- About the Job Input -->
-        <EditText
-            android:id="@+id/AboutJobEditTxt"
+        <!-- Total Openings -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="About the Job"
-            android:inputType="textMultiLine"
-            android:autofillHints="none"
-            android:minHeight="48dp"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:gravity="top|start"
-            android:background="@drawable/edittext_background"/>
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/TotalOpeningsEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Total Openings"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Skills Required Input -->
-        <EditText
-            android:id="@+id/SkillsRequiredEditTxt"
+        <!-- About Job -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:hint="Skills Required"
-            android:autofillHints="none"
-            android:minHeight="48dp"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:background="@drawable/edittext_background"/>
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/AboutJobEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="About the Job"
+                android:inputType="textMultiLine"
+                android:minLines="3" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Additional Information Input -->
-        <EditText
-            android:id="@+id/AddationalInfoEditTxt"
+        <!-- Skills Required -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
-            android:hint="Additional Information"
-            android:autofillHints="none"
-            android:minHeight="48dp"
-            android:layout_marginBottom="32dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:gravity="top|start"
-            android:background="@drawable/edittext_background"/>
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/SkillsRequiredEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Skills Required" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Additional Info (optional) — Typo fixed -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/AdditionalInfoEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Additional Info (optional)" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Add Job Button -->
         <Button
             android:id="@+id/AddJobBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="10dp"
-            android:backgroundTint="#4CAF50"
-            android:text="Add Job"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:padding="12dp" />
-
-        <!-- ProgressBar (Initially Hidden) -->
-        <ProgressBar
-            android:id="@+id/progress_add"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:layout_gravity="center" />
+            android:text="Post Job"
+            android:backgroundTint="@color/colorPrimary"
+            android:textColor="@color/white"
+            android:layout_marginBottom="32dp" />
 
     </LinearLayout>
-</LinearLayout>
+</ScrollView>

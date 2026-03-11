@@ -1,78 +1,73 @@
 package com.swapnil.jobportal.Fragments;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.widget.SwitchCompat;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+import com.swapnil.jobportal.Adapters.AdminAllApplicationsAdapter;
+import com.swapnil.jobportal.Model.ApplicationModel;
 import com.swapnil.jobportal.R;
 
+/**
+ * AdminDashboardFragment — shows all applications received by the current admin.
+ * Queries: jobApplications/{currentAdminId}
+ */
 public class AdminDashboardFragment extends Fragment {
 
-    private boolean isSwitchChecked = false;  // To store switch state
+    private RecyclerView applicationsRecyclerView;
+    private TextView emptyStateTv;
+    private AdminAllApplicationsAdapter adapter;
 
-    public AdminDashboardFragment() {
-        // Required empty public constructor
-    }
-
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_dashboard, container, false);
 
-        // Switch to navigate between fragments
-        SwitchCompat mSwitch = view.findViewById(R.id.AdminDashBoardSwitch);
+        applicationsRecyclerView = view.findViewById(R.id.ApplicationsRecyclerView);
+        emptyStateTv = view.findViewById(R.id.EmptyStateTv);
 
-        // Check if we have a saved state (e.g., after a screen rotation)
-        if (savedInstanceState != null) {
-            isSwitchChecked = savedInstanceState.getBoolean("switch_state", false);
-        }
+        applicationsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Set the switch to the saved state
-        mSwitch.setChecked(isSwitchChecked);
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return view;
 
-        // Initial fragment transaction based on the switch state
-        if (!isSwitchChecked) {
-            showAllApplicationsFragment();
-        } else {
-            showSelectedApplicationsFragment();
-        }
+        String adminId = currentUser.getUid();
 
-        // Set up switch listener
-        mSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            isSwitchChecked = isChecked;
+        FirebaseRecyclerOptions<ApplicationModel> options =
+                new FirebaseRecyclerOptions.Builder<ApplicationModel>()
+                        .setQuery(FirebaseDatabase.getInstance()
+                                .getReference("jobApplications").child(adminId),
+                                ApplicationModel.class)
+                        .build();
 
-            // Navigate to the appropriate fragment based on switch state
-            if (isChecked) {
-                showSelectedApplicationsFragment();
-            } else {
-                showAllApplicationsFragment();
-            }
-        });
+        adapter = new AdminAllApplicationsAdapter(options, emptyStateTv);
+        applicationsRecyclerView.setAdapter(adapter);
 
         return view;
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // Save the switch state to handle screen rotations
-        outState.putBoolean("switch_state", isSwitchChecked);
+    public void onStart() {
+        super.onStart();
+        if (adapter != null) adapter.startListening();
     }
 
-    // Helper method to show the AdminAllApplicationsFragment
-    private void showAllApplicationsFragment() {
-        getParentFragmentManager().beginTransaction()
-                .replace(R.id.AdminDashBoardContainer, new AdminAllApplicationsFragment())
-                .commit();
-    }
-
-    // Helper method to show the AdminSelectedFragment
-    private void showSelectedApplicationsFragment() {
-        getParentFragmentManager().beginTransaction()
-                .replace(R.id.AdminDashBoardContainer, new AdminSelectedFragment())
-                .commit();
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (adapter != null) adapter.stopListening();
     }
 }

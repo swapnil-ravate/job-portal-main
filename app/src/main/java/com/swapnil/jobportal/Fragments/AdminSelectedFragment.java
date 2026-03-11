@@ -4,66 +4,60 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.swapnil.jobportal.Adapters.AdminSelectedApplicationAdapter;
-import com.swapnil.jobportal.Model.Model;
-import com.swapnil.jobportal.R;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.swapnil.jobportal.Adapters.AdminSelectedApplicationAdapter;
+import com.swapnil.jobportal.Model.ApplicationModel;
+import com.swapnil.jobportal.R;
 
+/**
+ * AdminSelectedFragment — shows only the applications that have been accepted (status == "selected").
+ */
 public class AdminSelectedFragment extends Fragment {
 
-    RecyclerView recyclerView;
-    AdminSelectedApplicationAdapter adapter;
+    private RecyclerView applicationsRecyclerView;
+    private TextView emptyStateTv;
+    private AdminSelectedApplicationAdapter adapter;
 
-    public AdminSelectedFragment() {
-        // Required empty public constructor
-    }
-
-    public static AdminSelectedFragment newInstance(String param1, String param2) {
-        AdminSelectedFragment fragment = new AdminSelectedFragment();
-        Bundle args = new Bundle();
-        args.putString("param1", param1);
-        args.putString("param2", param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_selected, container, false);
 
-        // Assigning the RecyclerView to display selected applications
-        recyclerView = view.findViewById(R.id.AdminSelectedApplicationsRecyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        applicationsRecyclerView = view.findViewById(R.id.ApplicationsRecyclerView);
+        emptyStateTv = view.findViewById(R.id.EmptyStateTv);
 
-        // Getting the current logged-in user ID from Firebase Authentication
-        String adminId = FirebaseAuth.getInstance().getCurrentUser() != null ?
-                FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
+        applicationsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Handle case where no user is logged in
-        if (adminId == null) {
-            Toast.makeText(getContext(), "No user logged in. Please log in first.", Toast.LENGTH_SHORT).show();
-            return view;
-        }
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return view;
 
-        // Firebase Recycler Options to get data from Firebase database using Model class and reference
-        FirebaseRecyclerOptions<Model> options =
-                new FirebaseRecyclerOptions.Builder<Model>()
-                        .setQuery(FirebaseDatabase.getInstance().getReference().child("selectedApplications").child(adminId), Model.class)
+        // Filter by status = "selected" for this admin
+        Query query = FirebaseDatabase.getInstance()
+                .getReference("jobApplications")
+                .child(currentUser.getUid())
+                .orderByChild("status")
+                .equalTo("selected");
+
+        FirebaseRecyclerOptions<ApplicationModel> options =
+                new FirebaseRecyclerOptions.Builder<ApplicationModel>()
+                        .setQuery(query, ApplicationModel.class)
                         .build();
 
-        // Setting adapter to RecyclerView
-        adapter = new AdminSelectedApplicationAdapter(options);
-        recyclerView.setAdapter(adapter);
+        adapter = new AdminSelectedApplicationAdapter(options, emptyStateTv);
+        applicationsRecyclerView.setAdapter(adapter);
 
         return view;
     }
@@ -71,18 +65,12 @@ public class AdminSelectedFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        // Starts listening for data from Firebase when this fragment starts
-        if (adapter != null) {
-            adapter.startListening();
-        }
+        if (adapter != null) adapter.startListening();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        // Stops listening for data from Firebase when this fragment stops
-        if (adapter != null) {
-            adapter.stopListening();
-        }
+        if (adapter != null) adapter.stopListening();
     }
 }

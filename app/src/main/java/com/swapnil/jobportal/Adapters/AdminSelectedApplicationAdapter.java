@@ -1,67 +1,100 @@
 package com.swapnil.jobportal.Adapters;
 
+import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
-import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.swapnil.jobportal.Model.Model;
-import com.swapnil.jobportal.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.swapnil.jobportal.Model.ApplicationModel;
+import com.swapnil.jobportal.R;
 
-public class AdminSelectedApplicationAdapter extends FirebaseRecyclerAdapter<Model, AdminSelectedApplicationAdapter.Viewholder> {
+/**
+ * AdminSelectedApplicationAdapter — displays only accepted (status="selected") applications.
+ * Allows viewing the resume URL in a browser.
+ */
+public class AdminSelectedApplicationAdapter
+        extends FirebaseRecyclerAdapter<ApplicationModel, AdminSelectedApplicationAdapter.ViewHolder> {
 
-    public AdminSelectedApplicationAdapter(@NonNull FirebaseRecyclerOptions<Model> options) {
+    private final TextView emptyStateTv;
+
+    public AdminSelectedApplicationAdapter(@NonNull FirebaseRecyclerOptions<ApplicationModel> options,
+                                           TextView emptyStateTv) {
         super(options);
-    }
-
-    @Override
-    protected void onBindViewHolder(@NonNull AdminSelectedApplicationAdapter.Viewholder holder, int position, @NonNull Model model) {
-        // Debugging log statements to ensure data is being fetched correctly
-        Log.d("AdminSelectedApp", "UserName: " + model.getUserName());
-        Log.d("AdminSelectedApp", "JobTitle: " + model.getJobTitle());
-
-        // Loading the selected application user name into the recycler view
-        holder.txtTitle.setText("User Name:"+model.getUserName());
-
-        // Loading the selected application job title into the recycler view
-        holder.txtaboutjob.setText("Job Title:"+model.getJobTitle());
-
-        // Optional: You can load the description as well if needed
+        this.emptyStateTv = emptyStateTv;
     }
 
     @NonNull
     @Override
-    public AdminSelectedApplicationAdapter.Viewholder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate the layout for each item in the RecyclerView
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_data_file, parent, false);
-        return new Viewholder(view);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.admin_job_application_accept_file, parent, false);
+        return new ViewHolder(view);
     }
 
-    /**
-     * ViewHolder to hold each item and show it in the RecyclerView.
-     * Each ViewHolder represents a job application data item.
-     */
-    public static class Viewholder extends RecyclerView.ViewHolder {
+    @Override
+    protected void onBindViewHolder(@NonNull ViewHolder holder, int position,
+                                    @NonNull ApplicationModel model) {
+        holder.applicantNameTv.setText(model.getUserName());
+        holder.applicantEmailTv.setText(model.getUserEmail());
+        holder.jobTitleTv.setText(model.getJobTitle());
+        holder.companyNameTv.setText(model.getCompanyName());
+        holder.statusTv.setText(model.getStatus());
+        holder.statusTv.setTextColor(Color.parseColor("#4CAF50")); // always green for selected
 
-        TextView txtusername;
+        // Open resume in browser
+        holder.viewResumeBtn.setOnClickListener(view -> {
+            String resumeUrl = model.getResumeUrl();
+            if (resumeUrl != null && !resumeUrl.isEmpty()) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(resumeUrl));
+                view.getContext().startActivity(browserIntent);
+            } else {
+                Toast.makeText(view.getContext(), "No resume available.", Toast.LENGTH_SHORT).show();
+            }
+        });
 
-        TextView txtTitle; // TextView for user name
-        TextView txtaboutjob;  // TextView for job title
+        // Hide accept/reject buttons for selected-only view
+        if (holder.acceptBtn != null) holder.acceptBtn.setVisibility(View.GONE);
+        if (holder.rejectBtn != null) holder.rejectBtn.setVisibility(View.GONE);
+    }
 
-        public Viewholder(@NonNull View itemView) {
+    @Override
+    public void onDataChanged() {
+        super.onDataChanged();
+        if (emptyStateTv != null) {
+            emptyStateTv.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView applicantNameTv;
+        TextView applicantEmailTv;
+        TextView jobTitleTv;
+        TextView companyNameTv;
+        TextView statusTv;
+        Button viewResumeBtn;
+        Button acceptBtn;
+        Button rejectBtn;
+
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            // Assigning the views from the layout to the corresponding variables
-            txtTitle = itemView.findViewById(R.id.Title);
-            txtaboutjob = itemView.findViewById(R.id.Desc);
-
-            // Optional: Set default visibility or other parameters here if needed
+            applicantNameTv = itemView.findViewById(R.id.ApplicantNameTv);
+            applicantEmailTv = itemView.findViewById(R.id.ApplicantEmailTv);
+            jobTitleTv = itemView.findViewById(R.id.JobTitleTv);
+            companyNameTv = itemView.findViewById(R.id.CompanyNameTv);
+            statusTv = itemView.findViewById(R.id.StatusTv);
+            viewResumeBtn = itemView.findViewById(R.id.ViewResumeBtn);
+            acceptBtn = itemView.findViewById(R.id.AcceptBtn);
+            rejectBtn = itemView.findViewById(R.id.RejectBtn);
         }
     }
 }

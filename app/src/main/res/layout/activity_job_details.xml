@@ -1,164 +1,185 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="hardcodedText"
-    tools:context=".Activities.JobDetailsActivity"
-    android:background="@drawable/jobi"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="#F5F5F5">
 
-    <!-- ScrollView to make the content scrollable if needed -->
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:ignore="UselessParent">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <LinearLayout
-            android:orientation="vertical"
+        <!-- Company Name -->
+        <TextView
+            android:id="@+id/CompanyNameTv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="16dp">
+            android:text="Company Name"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginBottom="4dp" />
 
-            <!-- Company Name TextView -->
-            <TextView
-                android:id="@+id/CompanyNameTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Company Name"
-                android:textStyle="bold"
-                android:textSize="20sp"
-                android:textColor="#333333" />
+        <!-- Job Title -->
+        <TextView
+            android:id="@+id/JobTitleTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Job Title"
+            android:textSize="18sp"
+            android:textColor="#333333"
+            android:layout_marginBottom="12dp" />
 
-            <!-- Job Title TextView -->
-            <TextView
-                android:id="@+id/JobTitleTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Job Title"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#333333" />
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="12dp" />
 
-            <!-- Salary TextView -->
-            <TextView
-                android:id="@+id/SalaryTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Job Salary"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#333333" />
+        <!-- Salary -->
+        <TextView
+            android:id="@+id/JobSalaryTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salary: --"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:layout_marginBottom="8dp" />
 
-            <!-- Job Start Date TextView -->
-            <TextView
-                android:id="@+id/JobStartDateTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Job Start By"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#333333" />
+        <!-- Start Date -->
+        <TextView
+            android:id="@+id/JobStartDateTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start Date: --"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:layout_marginBottom="8dp" />
 
-            <!-- Apply By Date TextView -->
-            <TextView
-                android:id="@+id/LastDateToApplyTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Apply By"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#333333" />
+        <!-- Last Date -->
+        <TextView
+            android:id="@+id/JobLastDateTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Apply By: --"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:layout_marginBottom="8dp" />
 
-            <!-- Total Number of Openings TextView -->
-            <TextView
-                android:id="@+id/TotolNoOfOpeningsTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Total No of Openings"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#333333" />
+        <!-- Total Openings -->
+        <TextView
+            android:id="@+id/TotalOpeningsTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Openings: --"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:layout_marginBottom="12dp" />
 
-            <!-- Required Skills TextView -->
-            <TextView
-                android:id="@+id/RequiredSkillsTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Required Skills"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#333333" />
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="12dp" />
 
-            <!-- Job Description TextView -->
-            <TextView
-                android:id="@+id/JobDescriptionTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Job Description"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#333333" />
+        <!-- About Job -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="About this Job"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="4dp" />
 
-            <!-- Additional Data TextView -->
-            <TextView
-                android:id="@+id/AdditionalDataTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="Additional Data"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#333333" />
+        <TextView
+            android:id="@+id/AboutJobTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="--"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:layout_marginBottom="12dp" />
 
-            <!-- Select Resume Button -->
-            <Button
-                android:id="@+id/SelectResumeBtn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="Select Resume PDF"
-                android:textSize="18sp"
-                android:padding="12dp"
-                android:backgroundTint="@android:color/holo_green_dark"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center" />
+        <!-- Skills Required -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Skills Required"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="4dp" />
 
-            <!-- Selected File Name TextView -->
-            <TextView
-                android:id="@+id/SelectedFileNameTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="No file selected"
-                android:textSize="16sp"
-                android:textColor="#555555"
-                android:layout_marginBottom="16dp"
-                android:padding="4dp" />
+        <TextView
+            android:id="@+id/SkillsRequiredTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="--"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:layout_marginBottom="12dp" />
 
-            <!-- Apply Button -->
-            <Button
-                android:id="@+id/ApplyJobBtn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Apply For Job"
-                android:textSize="18sp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                android:padding="16dp"
-                android:backgroundTint="@android:color/holo_blue_dark"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"/>
+        <!-- Additional Info -->
+        <TextView
+            android:id="@+id/AdditionalInfoTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="14sp"
+            android:textColor="#777777"
+            android:layout_marginBottom="16dp" />
 
-        </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="16dp" />
+
+        <!-- ProgressBar -->
+        <ProgressBar
+            android:id="@+id/ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp"
+            android:visibility="invisible" />
+
+        <!-- Select Resume Button -->
+        <Button
+            android:id="@+id/SelectResumeBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Resume (PDF)"
+            android:backgroundTint="@color/colorAccent"
+            android:textColor="@color/white"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Selected file name -->
+        <TextView
+            android:id="@+id/SelectedFileNameTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="13sp"
+            android:textColor="#4CAF50"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+        <!-- Apply Button -->
+        <Button
+            android:id="@+id/ApplyBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Apply Now"
+            android:backgroundTint="@color/colorPrimary"
+            android:textColor="@color/white"
+            android:layout_marginBottom="32dp" />
+
+    </LinearLayout>
+</ScrollView>

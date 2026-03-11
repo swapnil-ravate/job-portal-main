@@ -2,134 +2,179 @@ package com.swapnil.jobportal.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-import com.swapnil.jobportal.R;
+
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.swapnil.jobportal.R;
 
-public class RegistrationActivity extends AppCompatActivity implements View.OnClickListener {
+import java.util.HashMap;
+import java.util.Map;
 
-    private EditText mailid, pwd, pwd1;
-    private FirebaseAuth mAuth;
+/**
+ * RegistrationActivity — handles new user sign-up with Firebase Authentication.
+ * On success, creates a user record in the Realtime Database and redirects to LoginActivity.
+ */
+public class RegistrationActivity extends AppCompatActivity {
+
+    private EditText emailEditText;
+    private EditText passwordEditText;
+    private EditText confirmPasswordEditText;
+    private EditText fullNameEditText;
+    private Button signUpBtn;
     private ProgressBar progressBar;
+
+    private FirebaseAuth firebaseAuth;
+    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
 
-        mailid = findViewById(R.id.et_signup_email);
-        pwd = findViewById(R.id.et_signup_pwd);
-        pwd1 = findViewById(R.id.et_signup_pwd1);
-        progressBar = findViewById(R.id.p_bar);  // Add a ProgressBar in your layout
+        // Initialize Firebase
+        firebaseAuth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
-        mAuth = FirebaseAuth.getInstance();
-        findViewById(R.id.btn_signup).setOnClickListener(this);
+        // Bind UI views
+        emailEditText = findViewById(R.id.EmailEditTxt);
+        passwordEditText = findViewById(R.id.PasswordEditTxt);
+        confirmPasswordEditText = findViewById(R.id.ConfirmPasswordEditTxt);
+        fullNameEditText = findViewById(R.id.FullNameEditTxt);
+        signUpBtn = findViewById(R.id.SignUpBtn);
+        progressBar = findViewById(R.id.ProgressBar);
+
+        progressBar.setVisibility(View.INVISIBLE);
+
+        // Start registration when user taps Sign Up
+        signUpBtn.setOnClickListener(view -> registerUser());
     }
 
+    /**
+     * Validates all input fields and kicks off Firebase registration.
+     */
     private void registerUser() {
-        String email = mailid.getText().toString().trim();
-        String password = pwd.getText().toString().trim();
-        String password1 = pwd1.getText().toString().trim();
+        String email = emailEditText.getText().toString().trim();
+        String password = passwordEditText.getText().toString().trim();
+        String confirmPassword = confirmPasswordEditText.getText().toString().trim();
+        String fullName = fullNameEditText.getText().toString().trim();
 
-        // Validation checks
-        if (!isValidInput(email, password, password1)) {
+        // --- Validation ---
+        if (fullName.isEmpty()) {
+            fullNameEditText.setError("Full name is required");
+            fullNameEditText.requestFocus();
+            return;
+        }
+        if (email.isEmpty()) {
+            emailEditText.setError("Email is required");
+            emailEditText.requestFocus();
+            return;
+        }
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailEditText.setError("Please enter a valid email address");
+            emailEditText.requestFocus();
+            return;
+        }
+        if (password.isEmpty()) {
+            passwordEditText.setError("Password is required");
+            passwordEditText.requestFocus();
+            return;
+        }
+        if (password.length() < 6) {
+            passwordEditText.setError("Password must be at least 6 characters");
+            passwordEditText.requestFocus();
+            return;
+        }
+        if (confirmPassword.isEmpty()) {
+            confirmPasswordEditText.setError("Please confirm your password");
+            confirmPasswordEditText.requestFocus();
+            return;
+        }
+        if (!password.equals(confirmPassword)) {
+            confirmPasswordEditText.setError("Passwords do not match");
+            confirmPasswordEditText.requestFocus();
             return;
         }
 
-        // Show the ProgressBar while registration is happening
+        // Disable button and show progress
+        signUpBtn.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
 
-        // Disable signup button to prevent multiple clicks
-        Button signUpButton = findViewById(R.id.btn_signup);
-        signUpButton.setEnabled(false);
+        // Create user with Firebase Authentication
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    // Update the display name on the Auth profile
+                    UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(fullName)
+                            .build();
 
-        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
-            progressBar.setVisibility(View.INVISIBLE);  // Hide ProgressBar
-            signUpButton.setEnabled(true);  // Re-enable the button
+                    authResult.getUser().updateProfile(profileUpdate)
+                            .addOnSuccessListener(unused -> {
+                                // Save user data to the Realtime Database
+                                saveUserToDatabase(authResult.getUser().getUid(), email, fullName);
+                            })
+                            .addOnFailureListener(e -> {
+                                progressBar.setVisibility(View.INVISIBLE);
+                                signUpBtn.setEnabled(true);
+                                showToast("Failed to update profile: " + e.getMessage());
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    signUpBtn.setEnabled(true);
 
-            if (task.isSuccessful()) {
-                // Registration was successful
-                Toast.makeText(RegistrationActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
-                FirebaseAuth.getInstance().signOut();  // Sign out after successful registration
-                clearInputFields();  // Clear the input fields
-
-                Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-            } else {
-                // Handle errors
-                handleRegistrationError(task.getException());
-            }
-        });
+                    if (e instanceof FirebaseAuthUserCollisionException) {
+                        showToast("An account with this email already exists.");
+                    } else {
+                        showToast("Registration failed: " + e.getMessage());
+                    }
+                });
     }
 
-    private boolean isValidInput(String email, String password, String password1) {
-        if (email.isEmpty()) {
-            mailid.setError("Email is required");
-            mailid.requestFocus();
-            return false;
-        }
+    /**
+     * Saves a new user record under users/{uid} in the Realtime Database.
+     * Role is set to empty string — user will assign it in RoleActivity.
+     */
+    private void saveUserToDatabase(String uid, String email, String displayName) {
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("userId", uid);
+        userData.put("email", email);
+        userData.put("displayName", displayName);
+        userData.put("role", "");          // role assigned later in RoleActivity
+        userData.put("profilePic", "");
+        userData.put("lastLogin", System.currentTimeMillis());
 
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            mailid.setError("Please enter a valid email");
-            mailid.requestFocus();
-            return false;
-        }
+        databaseReference.child(uid).setValue(userData)
+                .addOnSuccessListener(unused -> {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    signUpBtn.setEnabled(true);
 
-        if (password.isEmpty()) {
-            pwd.setError("Password is required");
-            pwd.requestFocus();
-            return false;
-        }
-
-        if (password1.isEmpty()) {
-            pwd1.setError("Please confirm your password");
-            pwd1.requestFocus();
-            return false;
-        }
-
-        if (password.length() < 6) {
-            pwd.setError("Password should be at least 6 characters");
-            pwd.requestFocus();
-            return false;
-        }
-
-        if (!password1.equals(password)) {
-            pwd1.setError("Passwords don't match");
-            pwd1.requestFocus();
-            return false;
-        }
-
-        return true;
+                    // Sign out so user must log in explicitly
+                    firebaseAuth.signOut();
+                    showToast("Registration successful! Please log in.");
+                    Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    signUpBtn.setEnabled(true);
+                    showToast("Failed to save user data: " + e.getMessage());
+                });
     }
 
-    private void handleRegistrationError(Exception exception) {
-        if (exception instanceof FirebaseAuthUserCollisionException) {
-            Toast.makeText(RegistrationActivity.this, "Email is already registered", Toast.LENGTH_SHORT).show();
-        } else if (exception != null) {
-            Toast.makeText(RegistrationActivity.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(RegistrationActivity.this, "Registration failed due to an unknown error", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void clearInputFields() {
-        mailid.setText("");
-        pwd.setText("");
-        pwd1.setText("");
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.btn_signup) {
-            registerUser();
-        }
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

@@ -1,7 +1,6 @@
 package com.swapnil.jobportal.Adapters;
 
-import android.content.Context;
-import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,85 +9,62 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.swapnil.jobportal.Activities.JobDetailsActivity;
-import com.swapnil.jobportal.Model.Model;
-import com.swapnil.jobportal.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.swapnil.jobportal.Model.ApplicationModel;
+import com.swapnil.jobportal.R;
 
-public class UserPlacedApplicationAdapter extends FirebaseRecyclerAdapter<Model, UserPlacedApplicationAdapter.Viewholder> {
+/**
+ * UserPlacedApplicationAdapter — displays only the "selected" applications for a job seeker.
+ * Reuses the same item layout as UserAllApplicationsAdapter.
+ */
+public class UserPlacedApplicationAdapter
+        extends FirebaseRecyclerAdapter<ApplicationModel, UserPlacedApplicationAdapter.ViewHolder> {
 
-    public UserPlacedApplicationAdapter(FirebaseRecyclerOptions<Model> options) {
+    private final TextView emptyStateTv;
+
+    public UserPlacedApplicationAdapter(@NonNull FirebaseRecyclerOptions<ApplicationModel> options,
+                                        TextView emptyStateTv) {
         super(options);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull UserPlacedApplicationAdapter.Viewholder holder, int position, @NonNull Model model) {
-        Context context = holder.itemView.getContext();  // More direct context retrieval
-
-        // Check if the views are not null before setting text
-        if (holder.txtTitle != null) {
-            holder.txtTitle.setText("Company Name:"+model.getCompanyName());
-        }
-
-        if (holder.txtDesc != null) {
-            holder.txtDesc.setText("Job Title:"+model.getJobTitle());
-        }
-
-        // Click Listener to open detailed information about the job
-//        holder.itemView.setOnClickListener(view -> {
-//            // Getting details for the selected job
-//            String companyName = model.getCompanyName();
-//            String jobTitle = model.getJobTitle();
-//            String jobDescription = model.getAboutJob();
-//            String jobSalary = model.getJobSalary();
-//            String startDate = model.getJobStartDate();
-//            String lastDate = model.getJobLastDate();
-//            String totalOpenings = model.getTotalOpenings();
-//            String requiredSkills = model.getSkillsRequired();
-//            String additionalInfo = model.getAdditionalInfo();
-//            String userId = model.getAdminId();
-
-            // Creating an intent to show the details of the selected job
-//            Intent intent = new Intent(context, JobDetailsActivity.class);
-//
-//            // Passing the job details to the next activity
-//            intent.putExtra("companyName", companyName);
-//            intent.putExtra("jobTitle", jobTitle);
-//            intent.putExtra("jobDescription", jobDescription);
-//            intent.putExtra("jobSalary", jobSalary);
-//            intent.putExtra("startDate", startDate);
-//            intent.putExtra("lastDate", lastDate);
-//            intent.putExtra("totalOpenings", totalOpenings);
-//            intent.putExtra("requiredSkills", requiredSkills);
-//            intent.putExtra("additionalInfo", additionalInfo);
-//            intent.putExtra("userId", userId);
-//
-//            // Starting the JobDetailsActivity
-//            context.startActivity(intent);
-//        });
+        this.emptyStateTv = emptyStateTv;
     }
 
     @NonNull
     @Override
-    public UserPlacedApplicationAdapter.Viewholder onCreateViewHolder(ViewGroup parent, int viewType) {
-        // Inflating the data objects into the XML file (single_data_file)
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_data_file, parent, false);
-        return new Viewholder(view);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.admin_job_application_accept_file, parent, false);
+        return new ViewHolder(view);
     }
 
-    // Viewholder to hold each object from the RecyclerView and show it in the RecyclerView
-    public static class Viewholder extends RecyclerView.ViewHolder {
+    @Override
+    protected void onBindViewHolder(@NonNull ViewHolder holder, int position,
+                                    @NonNull ApplicationModel model) {
+        holder.jobTitleTv.setText(model.getJobTitle());
+        holder.companyNameTv.setText(model.getCompanyName());
+        holder.statusTv.setText(model.getStatus());
+        // All displayed items are selected; show green badge
+        holder.statusTv.setTextColor(Color.parseColor("#4CAF50"));
+    }
 
-        TextView txtTitle;
-        TextView txtDesc;
+    @Override
+    public void onDataChanged() {
+        super.onDataChanged();
+        if (emptyStateTv != null) {
+            emptyStateTv.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
+        }
+    }
 
-        public Viewholder(View itemView) {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView jobTitleTv;
+        TextView companyNameTv;
+        TextView statusTv;
+
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            // Assigning the address of the materials to the TextViews
-            txtTitle = itemView.findViewById(R.id.Title);
-            txtDesc = itemView.findViewById(R.id.Desc);
+            jobTitleTv = itemView.findViewById(R.id.JobTitleTv);
+            companyNameTv = itemView.findViewById(R.id.CompanyNameTv);
+            statusTv = itemView.findViewById(R.id.StatusTv);
         }
     }
 }

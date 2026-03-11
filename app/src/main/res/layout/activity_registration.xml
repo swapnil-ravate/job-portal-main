@@ -1,112 +1,111 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="HardcodedText"
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:background="@drawable/jobi"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center">
+    android:background="@color/white">
 
-    <!-- Welcome and Registration Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:padding="10dp">
+        android:gravity="center_horizontal"
+        android:padding="24dp">
 
-        <!-- Welcome Text -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Welcome To Job Portal"
-            android:textAlignment="center"
-            android:textSize="40sp"
-            android:textColor="#000"
-            android:layout_marginBottom="20dp"/>
+            android:text="Create Account"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginBottom="24dp" />
 
-        <!-- Registration Text -->
-        <TextView
+        <!-- Full Name -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Registration"
-            android:textAlignment="center"
-            android:textSize="30sp"
-            android:textColor="#000"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/FullNameEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Full Name"
+                android:inputType="textPersonName"
+                android:imeOptions="actionNext" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Email -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/EmailEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Email Address"
+                android:inputType="textEmailAddress"
+                android:imeOptions="actionNext" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Password -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:passwordToggleEnabled="true"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/PasswordEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Password (min 6 characters)"
+                android:inputType="textPassword"
+                android:imeOptions="actionNext" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Confirm Password -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:passwordToggleEnabled="true"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/ConfirmPasswordEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Confirm Password"
+                android:inputType="textPassword"
+                android:imeOptions="actionDone" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- ProgressBar -->
+        <ProgressBar
+            android:id="@+id/ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:visibility="invisible" />
+
+        <!-- Sign Up Button -->
+        <Button
+            android:id="@+id/SignUpBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sign Up"
+            android:textSize="16sp"
+            android:backgroundTint="@color/colorPrimary"
+            android:textColor="@color/white" />
 
     </LinearLayout>
-
-    <!-- Input Fields Section -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:layout_marginTop="20dp">
-
-        <!-- Email Input -->
-        <EditText
-            android:id="@+id/et_signup_email"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:drawablePadding="10dp"
-            android:hint="Email Id"
-            android:inputType="textEmailAddress"
-            android:minHeight="48dp"
-            android:layout_margin="16dp"
-            android:padding="16dp"
-            android:textColor="#000"
-            android:background="@drawable/edittext_background"/>
-
-        <!-- Password Input -->
-        <EditText
-            android:id="@+id/et_signup_pwd"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:drawablePadding="10dp"
-            android:hint="Password"
-            android:inputType="textPassword"
-            android:minHeight="48dp"
-            android:layout_margin="16dp"
-            android:padding="16dp"
-            android:textColor="#000"
-            android:background="@drawable/edittext_background"/>
-
-        <!-- Confirm Password Input -->
-        <EditText
-            android:id="@+id/et_signup_pwd1"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:drawablePadding="10dp"
-            android:hint="Confirm Password"
-            android:inputType="textPassword"
-            android:minHeight="48dp"
-            android:layout_margin="16dp"
-            android:padding="16dp"
-            android:textColor="#000"
-            android:background="@drawable/edittext_background"/>
-
-    </LinearLayout>
-
-    <!-- Sign Up Button -->
-    <Button
-        android:id="@+id/btn_signup"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="Sign Up"
-        android:textColor="#ffffff"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:backgroundTint="#4CAF50"
-        android:textSize="18sp"/>
-
-    <!-- ProgressBar (Initially Hidden) -->
-    <ProgressBar
-        android:id="@+id/p_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"/>
-
-</LinearLayout>
+</ScrollView>

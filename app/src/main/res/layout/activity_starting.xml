@@ -1,37 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="HardcodedText"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:background="@drawable/jobi"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    tools:context=".Activities.StartingActivity">
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    android:background="@color/colorPrimary">
 
-    <!-- Welcome Text -->
+    <!-- App Logo / Icon area -->
+    <ImageView
+        android:id="@+id/AppLogoIv"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@mipmap/ic_launcher"
+        android:contentDescription="App logo" />
+
+    <!-- Welcome text -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome To Job Portal"
-        android:textSize="36sp"
+        android:text="Welcome to Job Portal"
+        android:textSize="26sp"
         android:textStyle="bold"
-        android:textColor="#000000"
-        android:textAlignment="center"
-        android:layout_centerInParent="true"
-        android:layout_marginTop="50dp" />
+        android:textColor="@color/white"
+        android:layout_marginTop="24dp"
+        android:gravity="center" />
 
-    <!-- Get Started Button -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Find your dream job today"
+        android:textSize="14sp"
+        android:textColor="@color/white"
+        android:layout_marginTop="8dp"
+        android:gravity="center" />
+
+    <!-- Login Button -->
     <Button
-        android:id="@+id/GetStartedBtn"
+        android:id="@+id/LoginBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get Started"
-        android:textSize="18sp"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:layout_marginBottom="50dp"
-        android:backgroundTint="#4CAF50"
-        android:textColor="#ffffff"
-        android:padding="16dp" />
+        android:text="Login"
+        android:textSize="16sp"
+        android:layout_marginTop="48dp"
+        android:backgroundTint="@color/white"
+        android:textColor="@color/colorPrimary" />
 
-</RelativeLayout>
+    <!-- Sign Up Button -->
+    <Button
+        android:id="@+id/SignUpBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sign Up"
+        android:textSize="16sp"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="@color/colorAccent"
+        android:textColor="@color/white" />
+
+</LinearLayout>

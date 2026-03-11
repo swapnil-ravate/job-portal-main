@@ -1,109 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/jobi"
-    tools:ignore="HardcodedText"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:layout_gravity="center"
-    android:gravity="center"
-    tools:context=".Activities.LoginActivity">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
-    <!-- Welcome and Login Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:padding="10dp">
+        android:gravity="center_horizontal"
+        android:padding="24dp">
 
-        <!-- Welcome Text -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Welcome To Job Portal"
-            android:textAlignment="center"
-            android:textSize="40sp"
-            android:textColor="#000"
-            android:layout_marginBottom="20dp"/>
+            android:text="Sign In"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginBottom="8dp" />
 
-        <!-- Login Text -->
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome back!"
+            android:textSize="14sp"
+            android:textColor="#888888"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Email -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/EmailEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Email Address"
+                android:inputType="textEmailAddress"
+                android:imeOptions="actionNext" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Password -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:passwordToggleEnabled="true"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/PasswordEditTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:imeOptions="actionDone" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- ProgressBar -->
+        <ProgressBar
+            android:id="@+id/ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:visibility="invisible" />
+
+        <!-- Login Button -->
+        <Button
+            android:id="@+id/LoginBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Login"
-            android:textAlignment="center"
-            android:textSize="30sp"
-            android:textColor="#000"
-            android:layout_marginTop="10dp"/>
-    </LinearLayout>
+            android:textSize="16sp"
+            android:backgroundTint="@color/colorPrimary"
+            android:textColor="@color/white" />
 
-    <!-- Email and Password Input Section -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="20dp">
-
-        <!-- Email EditText -->
-        <EditText
-            android:id="@+id/emailEditText"
-            android:hint="Enter email"
-            android:inputType="textEmailAddress"
+        <!-- Register button -->
+        <Button
+            android:id="@+id/RegisterBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp"
-            android:textColor="#000"
-            android:background="@drawable/edittext_background"/>
-
-        <!-- Password EditText -->
-        <EditText
-            android:id="@+id/passwordEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter password"
-            android:inputType="textPassword"
-            android:minHeight="48dp"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp"
-            android:textColor="#000"
-            android:background="@drawable/edittext_background"/>
+            android:text="Don't have an account? Sign Up"
+            android:textSize="14sp"
+            android:layout_marginTop="12dp"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:textColor="@color/colorPrimary" />
 
     </LinearLayout>
-
-    <!-- ProgressBar (Initially hidden) -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone" />
-
-    <!-- Login Button -->
-    <Button
-        android:id="@+id/loginButton"
-        android:text="Login"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="#4CAF50"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:layout_marginTop="16dp"/>
-
-    <!-- Sign-up Redirect -->
-    <TextView
-        android:id="@+id/to_reg"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Don't Have an Account? Sign Up"
-        android:textSize="16sp"
-        android:textColor="#2196F3"
-        android:textAlignment="center"
-        android:layout_marginTop="8dp"/>
-
-</LinearLayout>
+</ScrollView>

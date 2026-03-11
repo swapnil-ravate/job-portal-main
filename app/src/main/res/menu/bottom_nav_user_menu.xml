@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bottom navigation menu for Job Seeker (MainActivity) -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:title="Jobs"
+        android:icon="@android:drawable/ic_menu_search" />
+
+    <item
+        android:id="@+id/nav_dashboard"
+        android:title="My Applications"
+        android:icon="@android:drawable/ic_menu_agenda" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:title="Profile"
+        android:icon="@android:drawable/ic_menu_myplaces" />
+
+</menu>

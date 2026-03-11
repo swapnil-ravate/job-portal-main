@@ -1,52 +1,199 @@
-# Android Job Portal App
+# 📱 Job Portal Android App
 
-## Overview
-The Android Job Portal App is a mobile application designed for job seekers and employers. This app allows users to search for job postings, apply for jobs, and manage applications seamlessly.
+A production-ready Android Job Portal application built with **Java**, **Firebase Authentication**, **Firebase Realtime Database**, and **Firebase Storage**.
 
-## Features
-- **User Authentication:** Secure login and registration for users.
-- **Job Search:** Users can search for jobs using various filters.
-- **Application Tracking:** Track applications and their statuses.
-- **Employer Portal:** Employers can post job vacancies and manage applications.
-- **User Profiles:** Users can create and update their profiles.
-- **Notifications:** Real-time notifications for job applications and updates.
+---
 
-## Project Structure
+## ✨ Features
+
+### Job Seeker
+- Register and log in securely via Firebase Auth
+- Browse all available job listings
+- View full job details (salary, openings, skills, dates)
+- Pick a PDF resume and apply directly in the app
+- Track all submitted applications with live status updates (`pending` / `selected` / `rejected`)
+
+### Admin
+- Post new job listings with fields: title, company, salary, dates, openings, skills, and description
+- View all received applications from job seekers
+- Accept or Reject applicants — status synced for both admin and job seeker in real time
+- View uploaded resumes (Firebase Storage PDF links)
+
+---
+
+## 🏗️ Tech Stack
+
+| Component | Library / Technology |
+|-----------|---------------------|
+| Language | Java |
+| Min SDK | 31 (Android 12) |
+| Target SDK | 35 (Android 15) |
+| Authentication | Firebase Auth |
+| Database | Firebase Realtime Database |
+| File Storage | Firebase Storage (PDF resumes) |
+| RecyclerView | FirebaseUI Database `8.0.2` |
+| Image Loading | Picasso `2.8` |
+| Profile Image | CircleImageView `3.1.0` |
+| UI | Material Design Components |
+
+---
+
+## 🗂️ Firebase Database Structure
+
 ```
-Android-Job-Portal-App/
+Root
+├── users
+│   └── {userId}
+│       ├── email: String
+│       ├── role: "admin" | "jobseeker"
+│       ├── displayName: String
+│       ├── profilePic: String (URL)
+│       └── lastLogin: Long (timestamp)
 │
-├── app/                  # Main application module
-│   ├── src/              # Source files
-│   │   ├── main/         # Main source set
-│   │   │   ├── java/     # Java/Kotlin files
-│   │   │   └── res/      # Resource files (layouts, drawables, etc.)
-│   │   └── test/         # Unit tests
-│   └── build.gradle       # Gradle configuration
+├── jobs
+│   └── {jobId}
+│       ├── jobId, adminId, companyName, jobTitle
+│       ├── jobSalary, jobStartDate, jobLastDate
+│       ├── totalOpenings, aboutJob, skillsRequired
+│       └── additionalInfo
 │
-├── build.gradle           # Project level Gradle configuration
-├── settings.gradle         # Settings for project modules
-└── README.md              # Project documentation
+└── jobApplications
+    └── {adminId or userId}
+        └── {applicationId}
+            ├── applicationId, userId, userName, userEmail
+            ├── jobTitle, companyName, adminId
+            ├── resumeUrl  ← Firebase Storage download URL
+            └── status: "pending" | "selected" | "rejected"
 ```
 
-## Setup Instructions
-1. **Clone the Repository:**
+---
+
+## 📁 Project Structure
+
+```
+com.swapnil.jobportal/
+│
+├── Activities/
+│   ├── StartingActivity.java       ← LAUNCHER / splash
+│   ├── RegistrationActivity.java
+│   ├── LoginActivity.java
+│   ├── RoleActivity.java           ← Admin code: ADMIN123
+│   ├── AdminActivity.java
+│   └── JobDetailsActivity.java     ← PDF resume upload + apply
+│
+├── Fragments/
+│   ├── DisplayJobFragment.java
+│   ├── UserDashboardFragment.java
+│   ├── UserAllApplicationsFragment.java
+│   ├── UserPlacedApplicationsFragment.java
+│   ├── UserProfileFragment.java
+│   ├── AddJobFragment.java
+│   ├── AdminDashboardFragment.java
+│   ├── AdminAllApplicationsFragment.java
+│   ├── AdminSelectedFragment.java
+│   └── AdminProfileFragment.java
+│
+├── Adapters/
+│   ├── JobsAdapter.java
+│   ├── UserAllApplicationsAdapter.java
+│   ├── UserPlacedApplicationAdapter.java
+│   ├── AdminAllApplicationsAdapter.java
+│   └── AdminSelectedApplicationAdapter.java
+│
+├── Model/
+│   ├── UserModel.java
+│   ├── JobModel.java
+│   └── ApplicationModel.java
+│
+├── MainActivity.java               ← Job Seeker dashboard
+└── MyApplication.java              ← Firebase init + offline persistence
+```
+
+---
+
+## 🚀 Setup Instructions
+
+### Prerequisites
+- Android Studio Hedgehog or newer
+- A Firebase project with **Auth**, **Realtime Database**, and **Storage** enabled
+- Your own `google-services.json`
+
+### Steps
+
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/shivaprasadgopu/Android-Job-Portal-App.git
-   cd Android-Job-Portal-App
+   git clone https://github.com/swapnil-ravate/job-portal-main.git
+   cd job-portal-main
    ```
-2. **Open in Android Studio:**
-   - Open Android Studio and select "Open an existing Android Studio project".
-   - Navigate to the cloned directory and open it.
-3. **Sync Project with Gradle Files:**
-   - Click on "Sync Project with Gradle Files" to ensure all dependencies are downloaded.
-4. **Run the App:**
-   - Connect an Android device or start an Android emulator.
-   - Click on the "Run" button in Android Studio.
 
-## Usage Guide
-- After launching the app, you will be prompted to log in or register.
-- Upon successful login, you can search for jobs or view your profile.
-- Employers can post jobs by navigating to the employer portal section.
+2. **Add your Firebase config:**
+   - Place your `google-services.json` inside `app/`
 
-## Conclusion
-This application serves as a robust platform for job seekers and employers, streamlining the job search and application process. The project's architecture is designed for scalability and maintainability, ensuring a smooth user experience.
+3. **Set Firebase Security Rules:**
+
+   **Realtime Database:**
+   ```json
+   {
+     "rules": {
+       "users": { "$uid": { ".read": "$uid === auth.uid", ".write": "$uid === auth.uid" } },
+       "jobs": { ".read": "auth != null", ".write": "auth != null" },
+       "jobApplications": { ".read": "auth != null", ".write": "auth != null" }
+     }
+   }
+   ```
+
+   **Firebase Storage:**
+   ```
+   match /resumes/{userId}/{fileName} {
+     allow read: if request.auth != null;
+     allow write: if request.auth != null && request.auth.uid == userId;
+   }
+   ```
+
+4. **Sync Gradle** in Android Studio and run the app.
+
+---
+
+## 🔐 Admin Access
+
+When selecting a role after first login, choosing **Admin** will prompt for a secret code.
+
+> **Admin code:** `ADMIN123`
+
+---
+
+## 📋 Application Flow
+
+```
+StartingActivity
+    ├── Already logged in? → checkRole → AdminActivity / MainActivity
+    ├── LOGIN  → LoginActivity  → checkRole → AdminActivity / MainActivity
+    └── SIGN UP → RegistrationActivity → LoginActivity
+
+LoginActivity → after login → checkRole
+    ├── role == "admin"     → AdminActivity
+    ├── role == "jobseeker" → MainActivity
+    └── role == ""          → RoleActivity → assign role → dashboard
+```
+
+---
+
+## 📦 Dependencies (app/build.gradle)
+
+```groovy
+implementation platform('com.google.firebase:firebase-bom:33.0.0')
+implementation 'com.google.firebase:firebase-auth'
+implementation 'com.google.firebase:firebase-database'
+implementation 'com.google.firebase:firebase-storage'
+implementation 'com.google.firebase:firebase-analytics'
+implementation 'com.firebaseui:firebase-ui-database:8.0.2'
+implementation 'com.squareup.picasso:picasso:2.8'
+implementation 'de.hdodenhof:circleimageview:3.1.0'
+implementation 'com.google.android.material:material:1.12.0'
+```
+
+---
+
+## 📝 License
+
+This project is for educational purposes.

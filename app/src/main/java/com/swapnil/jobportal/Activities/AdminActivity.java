@@ -1,68 +1,78 @@
 package com.swapnil.jobportal.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
-import android.widget.FrameLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.swapnil.jobportal.Fragments.AddJobFragment;
 import com.swapnil.jobportal.Fragments.AdminDashboardFragment;
 import com.swapnil.jobportal.Fragments.AdminProfileFragment;
 import com.swapnil.jobportal.R;
 
-import java.util.HashMap;
-import java.util.Map;
-
+/**
+ * AdminActivity — Admin dashboard with Bottom Navigation:
+ *   - Home: AddJobFragment
+ *   - Dashboard: AdminDashboardFragment
+ *   - Profile: AdminProfileFragment
+ */
 public class AdminActivity extends AppCompatActivity {
 
-    FrameLayout frameLayout;
-    BottomNavigationView bottomNavigationView;
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
 
-        // Initialize the FrameLayout and BottomNavigationView
-        frameLayout = findViewById(R.id.AdminFragmentContainer);
-        bottomNavigationView = findViewById(R.id.AdminBottomNavigationView);
+        firebaseAuth = FirebaseAuth.getInstance();
 
-        // Set the default fragment to AddJobFragment
+        BottomNavigationView bottomNavigation = findViewById(R.id.BottomNavigationView);
+
+        // Load default fragment
         loadFragment(new AddJobFragment());
 
-        // Set the listener for bottom navigation menu items
-        bottomNavigationView.setOnItemSelectedListener(this::onNavigationItemSelected);
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                loadFragment(new AddJobFragment());
+                return true;
+            } else if (itemId == R.id.nav_dashboard) {
+                loadFragment(new AdminDashboardFragment());
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                loadFragment(new AdminProfileFragment());
+                return true;
+            }
+            return false;
+        });
     }
 
-    private boolean onNavigationItemSelected(MenuItem item) {
-        // Load the appropriate fragment based on the menu item selected
-        Fragment fragment = getFragmentForMenuItem(item);
+    @Override
+    protected void onStart() {
+        super.onStart();
 
-        if (fragment != null) {
-            loadFragment(fragment);
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null) {
+            // Not logged in — go back to start
+            Intent intent = new Intent(AdminActivity.this, StartingActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         }
-
-        return true;
     }
 
-    // This method maps the item ID to the appropriate fragment
-    private Fragment getFragmentForMenuItem(MenuItem item) {
-        Map<Integer, Fragment> fragmentMap = new HashMap<>();
-        fragmentMap.put(R.id.homeMenu, new AddJobFragment());
-        fragmentMap.put(R.id.Dashboard, new AdminDashboardFragment());
-        fragmentMap.put(R.id.profileMenu, new AdminProfileFragment());
-
-        return fragmentMap.getOrDefault(item.getItemId(), null);
-    }
-
-
-    // Helper method to load the selected fragment
+    /**
+     * Replaces the fragment container with the given fragment.
+     */
     private void loadFragment(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.AdminFragmentContainer, fragment)
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.FragmentContainer, fragment)
                 .commit();
     }
 }

@@ -1,80 +1,73 @@
 package com.swapnil.jobportal.Fragments;
 
 import android.os.Bundle;
-import androidx.appcompat.widget.SwitchCompat;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+import com.swapnil.jobportal.Adapters.UserAllApplicationsAdapter;
+import com.swapnil.jobportal.Model.ApplicationModel;
 import com.swapnil.jobportal.R;
 
+/**
+ * UserDashboardFragment — shows all applications submitted by the current user.
+ * Queries: jobApplications/{currentUserId}
+ */
 public class UserDashboardFragment extends Fragment {
 
-    SwitchCompat mSwitch;
+    private RecyclerView applicationsRecyclerView;
+    private TextView emptyStateTv;
+    private UserAllApplicationsAdapter adapter;
 
-    // Parameters for fragment initialization
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    public UserDashboardFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Factory method to create a new instance of this fragment using the provided parameters.
-     */
-    public static UserDashboardFragment newInstance(String param1, String param2) {
-        UserDashboardFragment fragment = new UserDashboardFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            // Extract parameters if needed
-            String mParam1 = getArguments().getString(ARG_PARAM1);
-            String mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_user_dashboard, container, false);
 
-        // Initialize the SwitchCompat to navigate between fragments
-        mSwitch = view.findViewById(R.id.UserDashBoardSwitch);
-        mSwitch.setChecked(false);
+        applicationsRecyclerView = view.findViewById(R.id.ApplicationsRecyclerView);
+        emptyStateTv = view.findViewById(R.id.EmptyStateTv);
 
-        // Set the default fragment to be UserAllApplicationsFragment
-        getChildFragmentManager().beginTransaction()
-                .replace(R.id.UserDashBoardContainer, new UserAllApplicationsFragment())
-                .commit();
+        applicationsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Set up the onClickListener for the switch
-        mSwitch.setOnClickListener(view1 -> {
-            if (mSwitch.isChecked()) {
-                // Navigate to UserPlacedApplicationsFragment
-                getChildFragmentManager().beginTransaction()
-                        .replace(R.id.UserDashBoardContainer, new UserPlacedApplicationsFragment())
-                        .addToBackStack(null)  // Add to back stack for easy navigation
-                        .commit();
-            } else {
-                // Navigate back to UserAllApplicationsFragment
-                getChildFragmentManager().beginTransaction()
-                        .replace(R.id.UserDashBoardContainer, new UserAllApplicationsFragment())
-                        .addToBackStack(null)  // Add to back stack for easy navigation
-                        .commit();
-            }
-        });
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return view;
+
+        String userId = currentUser.getUid();
+
+        FirebaseRecyclerOptions<ApplicationModel> options =
+                new FirebaseRecyclerOptions.Builder<ApplicationModel>()
+                        .setQuery(FirebaseDatabase.getInstance()
+                                .getReference("jobApplications").child(userId),
+                                ApplicationModel.class)
+                        .build();
+
+        adapter = new UserAllApplicationsAdapter(options, emptyStateTv);
+        applicationsRecyclerView.setAdapter(adapter);
 
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (adapter != null) adapter.startListening();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (adapter != null) adapter.stopListening();
     }
 }

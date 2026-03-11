@@ -1,9 +1,8 @@
 package com.swapnil.jobportal.Adapters;
 
-import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,166 +13,147 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.swapnil.jobportal.Model.Model;
-import com.swapnil.jobportal.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.swapnil.jobportal.Model.ApplicationModel;
+import com.swapnil.jobportal.R;
 
-import java.util.HashMap;
+/**
+ * AdminAllApplicationsAdapter — displays all received applications for an admin.
+ * Allows the admin to Accept (status = "selected") or Reject (status = "rejected").
+ * Status update is saved to BOTH admin and user paths in the database.
+ */
+public class AdminAllApplicationsAdapter
+        extends FirebaseRecyclerAdapter<ApplicationModel, AdminAllApplicationsAdapter.ViewHolder> {
 
-public class AdminAllApplicationsAdapter extends FirebaseRecyclerAdapter<Model, AdminAllApplicationsAdapter.Viewholder> {
+    private final TextView emptyStateTv;
 
-    public AdminAllApplicationsAdapter(@NonNull FirebaseRecyclerOptions<Model> options) {
+    public AdminAllApplicationsAdapter(@NonNull FirebaseRecyclerOptions<ApplicationModel> options,
+                                       TextView emptyStateTv) {
         super(options);
-    }
-
-    @Override
-    protected void onBindViewHolder(@NonNull AdminAllApplicationsAdapter.Viewholder holder, int position, @NonNull Model model) {
-        Context context = holder.itemView.getContext();
-
-        String userName = model.getUserName();
-        String jobTitle = model.getJobTitle();
-        String resumeLink = model.getResumeLink();
-
-        holder.txtTitle.setText(userName != null ? userName : context.getString(R.string.unknown_user));
-        holder.txtDesc.setText(jobTitle != null ? "Job Title: " + jobTitle : context.getString(R.string.unknown_job_title));
-
-        if (resumeLink != null && !resumeLink.isEmpty()) {
-            holder.viewResumeBtn.setVisibility(View.VISIBLE);
-            holder.viewResumeBtn.setOnClickListener(view -> {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(Uri.parse(resumeLink), "application/pdf");
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                    context.startActivity(intent);
-                } catch (Exception e) {
-                    Toast.makeText(context, "Unable to open resume. Please try again.", Toast.LENGTH_SHORT).show();
-                    Log.e("ResumeView", "Error opening resume URI: " + resumeLink, e);
-                }
-            });
-        } else {
-            holder.viewResumeBtn.setVisibility(View.GONE);
-        }
-
-        holder.acceptJobApplicationBtn.setOnClickListener(view -> {
-            String adminId = model.getAdminId();
-            String userId = model.getUserId();
-            String companyName = model.getCompanyName();
-
-            if (adminId != null && userId != null && jobTitle != null && companyName != null && userName != null) {
-                acceptJobApplication(adminId, userId, jobTitle, companyName, userName, context, holder.acceptJobApplicationBtn);
-            } else {
-                showToast(context, context.getString(R.string.error_missing_data));
-            }
-        });
-    }
-
-    private void acceptJobApplication(String adminId, String userId, String jobTitle, String companyName, String userName, Context context, Button acceptBtn) {
-        FirebaseDatabase.getInstance().getReference()
-                .child("selectedApplications")
-                .child(adminId)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        boolean alreadyAccepted = false;
-
-                        for (DataSnapshot data : snapshot.getChildren()) {
-                            String existingUserId = data.child("userId").getValue(String.class);
-                            String existingJobTitle = data.child("jobTitle").getValue(String.class);
-                            String existingCompanyName = data.child("companyName").getValue(String.class);
-
-                            if (userId.equals(existingUserId) &&
-                                    jobTitle.equalsIgnoreCase(existingJobTitle) &&
-                                    companyName.equalsIgnoreCase(existingCompanyName)) {
-                                alreadyAccepted = true;
-                                break;
-                            }
-                        }
-
-                        if (alreadyAccepted) {
-                            showToast(context, "Already accepted");
-                        } else {
-                            String key = FirebaseDatabase.getInstance().getReference()
-                                    .child("selectedApplications")
-                                    .child(adminId)
-                                    .push().getKey();
-
-                            if (key == null) {
-                                showToast(context, context.getString(R.string.error_failed_to_generate_key));
-                                return;
-                            }
-
-                            HashMap<String, Object> applicationDetails = new HashMap<>();
-                            applicationDetails.put("jobTitle", jobTitle);
-                            applicationDetails.put("adminId", adminId);
-                            applicationDetails.put("companyName", companyName);
-                            applicationDetails.put("userId", userId);
-                            applicationDetails.put("userName", userName);
-
-                            FirebaseDatabase.getInstance().getReference()
-                                    .child("selectedApplications")
-                                    .child(adminId)
-                                    .child(key)
-                                    .updateChildren(applicationDetails)
-                                    .addOnCompleteListener(task -> {
-                                        if (task.isSuccessful()) {
-                                            FirebaseDatabase.getInstance().getReference()
-                                                    .child("selectedApplications")
-                                                    .child(userId)
-                                                    .child(key)
-                                                    .updateChildren(applicationDetails)
-                                                    .addOnCompleteListener(task1 -> {
-                                                        if (task1.isSuccessful()) {
-                                                            showToast(context, "Application accepted");
-                                                            acceptBtn.setEnabled(false);
-                                                            acceptBtn.setText("Accepted");
-                                                        } else {
-                                                            Log.e("Firebase", "User update failed", task1.getException());
-                                                            showToast(context, "Failed to save to user side");
-                                                        }
-                                                    });
-                                        } else {
-                                            Log.e("Firebase", "Admin update failed", task.getException());
-                                            showToast(context, "Failed to save to admin side");
-                                        }
-                                    });
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("FirebaseError", "Database error: " + error.getMessage());
-                        showToast(context, "Error accessing database");
-                    }
-                });
-    }
-
-    private void showToast(Context context, String message) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+        this.emptyStateTv = emptyStateTv;
     }
 
     @NonNull
     @Override
-    public Viewholder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.admin_job_application_accept_file, parent, false);
-        return new Viewholder(view);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.admin_job_application_accept_file, parent, false);
+        return new ViewHolder(view);
     }
 
-    public static class Viewholder extends RecyclerView.ViewHolder {
-        TextView txtusername, txtTitle, txtDesc;
-        Button viewResumeBtn, acceptJobApplicationBtn;
+    @Override
+    protected void onBindViewHolder(@NonNull ViewHolder holder, int position,
+                                    @NonNull ApplicationModel model) {
+        holder.applicantNameTv.setText(model.getUserName());
+        holder.applicantEmailTv.setText(model.getUserEmail());
+        holder.jobTitleTv.setText(model.getJobTitle());
+        holder.companyNameTv.setText(model.getCompanyName());
+        holder.statusTv.setText(model.getStatus());
+        applyStatusColor(holder.statusTv, model.getStatus());
 
-        public Viewholder(@NonNull View itemView) {
+        // Open resume in browser (Firebase Storage URL)
+        holder.viewResumeBtn.setOnClickListener(view -> {
+            String resumeUrl = model.getResumeUrl();
+            if (resumeUrl != null && !resumeUrl.isEmpty()) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(resumeUrl));
+                view.getContext().startActivity(browserIntent);
+            } else {
+                Toast.makeText(view.getContext(), "No resume available.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Accept application → update status to "selected" in both paths
+        holder.acceptBtn.setOnClickListener(view ->
+                updateApplicationStatus(model, "selected", view));
+
+        // Reject application → update status to "rejected" in both paths
+        holder.rejectBtn.setOnClickListener(view ->
+                updateApplicationStatus(model, "rejected", view));
+    }
+
+    /**
+     * Updates the application status in BOTH:
+     *   jobApplications/{adminId}/{applicationId}/status
+     *   jobApplications/{userId}/{applicationId}/status
+     */
+    private void updateApplicationStatus(ApplicationModel model, String newStatus, View view) {
+        String applicationId = model.getApplicationId();
+        String adminId = model.getAdminId();
+        String userId = model.getUserId();
+
+        if (applicationId == null || adminId == null || userId == null) {
+            Toast.makeText(view.getContext(), "Invalid application data.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        DatabaseReference appRef = FirebaseDatabase.getInstance().getReference("jobApplications");
+
+        // Update in admin's path
+        appRef.child(adminId).child(applicationId).child("status").setValue(newStatus)
+                .addOnSuccessListener(unused1 -> {
+                    // Also update in user's path
+                    appRef.child(userId).child(applicationId).child("status").setValue(newStatus)
+                            .addOnSuccessListener(unused2 -> {
+                                String msg = "selected".equals(newStatus)
+                                        ? "Application accepted!" : "Application rejected.";
+                                Toast.makeText(view.getContext(), msg, Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(view.getContext(),
+                                    "Failed to update user record: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show());
+                })
+                .addOnFailureListener(e -> Toast.makeText(view.getContext(),
+                        "Failed to update status: " + e.getMessage(),
+                        Toast.LENGTH_SHORT).show());
+    }
+
+    private void applyStatusColor(TextView statusTv, String status) {
+        if (status == null) return;
+        switch (status.toLowerCase()) {
+            case "selected":
+                statusTv.setTextColor(Color.parseColor("#4CAF50")); // green
+                break;
+            case "rejected":
+                statusTv.setTextColor(Color.parseColor("#F44336")); // red
+                break;
+            case "pending":
+            default:
+                statusTv.setTextColor(Color.parseColor("#FF9800")); // orange
+                break;
+        }
+    }
+
+    @Override
+    public void onDataChanged() {
+        super.onDataChanged();
+        if (emptyStateTv != null) {
+            emptyStateTv.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView applicantNameTv;
+        TextView applicantEmailTv;
+        TextView jobTitleTv;
+        TextView companyNameTv;
+        TextView statusTv;
+        Button viewResumeBtn;
+        Button acceptBtn;
+        Button rejectBtn;
+
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            txtusername = itemView.findViewById(R.id.username);
-            txtTitle = itemView.findViewById(R.id.Title);
-            txtDesc = itemView.findViewById(R.id.Desc);
+            applicantNameTv = itemView.findViewById(R.id.ApplicantNameTv);
+            applicantEmailTv = itemView.findViewById(R.id.ApplicantEmailTv);
+            jobTitleTv = itemView.findViewById(R.id.JobTitleTv);
+            companyNameTv = itemView.findViewById(R.id.CompanyNameTv);
+            statusTv = itemView.findViewById(R.id.StatusTv);
             viewResumeBtn = itemView.findViewById(R.id.ViewResumeBtn);
-            acceptJobApplicationBtn = itemView.findViewById(R.id.AcceptJobApplicationBtn);
+            acceptBtn = itemView.findViewById(R.id.AcceptBtn);
+            rejectBtn = itemView.findViewById(R.id.RejectBtn);
         }
     }
 }

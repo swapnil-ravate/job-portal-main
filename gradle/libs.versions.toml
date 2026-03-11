@@ -6,6 +6,7 @@ firebaseAnalytics = "22.4.0"
 firebaseAuth = "23.2.0"
 firebaseAuthVersion = "23.2.0"
 firebaseDatabase = "21.0.0"
+firebaseStorage = "21.0.1"
 firebaseUiDatabase = "8.0.2"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -28,6 +29,7 @@ firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "f
 firebase-auth-v2101 = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuthVersion" }
 firebase-database = { module = "com.google.firebase:firebase-database", version.ref = "firebaseDatabase" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }
 firebase-ui-database = { module = "com.firebaseui:firebase-ui-database", version.ref = "firebaseUiDatabase" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

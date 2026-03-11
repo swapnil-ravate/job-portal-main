@@ -1,15 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:background="@drawable/jobi"
     android:layout_height="match_parent"
-    tools:context=".Fragments.AdminSelectedFragment">
+    android:orientation="vertical"
+    android:background="#F5F5F5">
 
-    <!-- Adding contentDescription to make it accessible for screen readers -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Selected Applicants"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"
+        android:padding="16dp" />
+
+    <TextView
+        android:id="@+id/EmptyStateTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No applicants selected yet."
+        android:textSize="16sp"
+        android:textColor="#888888"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone" />
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/AdminSelectedApplicationsRecyclerView"
+        android:id="@+id/ApplicationsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:contentDescription="List of job applications" />
+        android:padding="8dp"
+        android:clipToPadding="false" />
+
 </LinearLayout>

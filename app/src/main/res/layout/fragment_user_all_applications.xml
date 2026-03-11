@@ -1,24 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/jobi"
-    tools:context=".Fragments.UserAllApplicationsFragment">
+    android:orientation="vertical"
+    android:background="#F5F5F5">
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefreshLayout"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:text="All My Applications"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"
+        android:padding="16dp" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/UserAllApplicationsRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="List of users" />
+    <TextView
+        android:id="@+id/EmptyStateTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No applications found."
+        android:textSize="16sp"
+        android:textColor="#888888"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone" />
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/ApplicationsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        android:clipToPadding="false" />
 
 </LinearLayout>

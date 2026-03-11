@@ -1,21 +1,41 @@
 # Add project specific ProGuard rules here.
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep line number attributes for crash stack traces
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# ===== Firebase Model Classes =====
+# Firebase Realtime Database requires all model fields to be preserved
+# during obfuscation so it can deserialize JSON payloads correctly.
+-keep class com.swapnil.jobportal.Model.** { *; }
+-keepclassmembers class com.swapnil.jobportal.Model.** {
+    public <init>();      # default constructor required by Firebase
+    public *;
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# ===== Firebase SDK =====
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.firebase.**
+
+# ===== FirebaseUI =====
+-keep class com.firebase.ui.** { *; }
+-dontwarn com.firebase.ui.**
+
+# ===== Picasso =====
+-keep class com.squareup.picasso.** { *; }
+-dontwarn com.squareup.picasso.**
+
+# ===== AndroidX Credentials =====
+-keep class androidx.credentials.** { *; }
+-dontwarn androidx.credentials.**
+
+# ===== CircleImageView =====
+-keep class de.hdodenhof.circleimageview.** { *; }
+
+# ===== General Android rules =====
+-keepclassmembers class * implements android.os.Parcelable {
+    public static final ** CREATOR;
+}

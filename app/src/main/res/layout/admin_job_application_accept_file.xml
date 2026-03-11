@@ -1,63 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- admin_job_application_accept_file.xml — Item card for job applications (both user and admin views) -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
-    android:layout_marginVertical="4dp"
-    app:cardCornerRadius="12dp"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
     app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:background="@color/cardColor">
+        android:padding="16dp">
 
+        <!-- Applicant Name (admin view) -->
         <TextView
-            android:id="@+id/username"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Username"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/Title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Title"
-            android:textSize="18sp"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/Desc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Description"
-            android:textSize="16sp"
-            android:layout_marginBottom="8dp" />
-
-        <Button
-            android:id="@+id/ViewResumeBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="View Resume (PDF)"
-            android:textSize="14sp"
-            android:backgroundTint="@android:color/holo_blue_dark"
-            android:textColor="#ffffff" />
-
-        <Button
-            android:id="@+id/AcceptJobApplicationBtn"
+            android:id="@+id/ApplicantNameTv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Accept Application"
+            android:text=""
             android:textSize="16sp"
-            android:layout_marginTop="12dp"
-            android:backgroundTint="#4CAF50"
-            android:textColor="#ffffff" />
-    </LinearLayout>
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="2dp" />
 
+        <!-- Applicant Email (admin view) -->
+        <TextView
+            android:id="@+id/ApplicantEmailTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#888888"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Job Title -->
+        <TextView
+            android:id="@+id/JobTitleTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Job Title"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginBottom="2dp" />
+
+        <!-- Company Name -->
+        <TextView
+            android:id="@+id/CompanyNameTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Company Name"
+            android:textSize="13sp"
+            android:textColor="#555555"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Status -->
+        <TextView
+            android:id="@+id/StatusTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="pending"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/statusPending"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Action buttons row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- View Resume -->
+            <Button
+                android:id="@+id/ViewResumeBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Resume"
+                android:textSize="12sp"
+                android:backgroundTint="@color/colorPrimary"
+                android:textColor="@color/white"
+                android:layout_marginEnd="4dp" />
+
+            <!-- Accept -->
+            <Button
+                android:id="@+id/AcceptBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Accept"
+                android:textSize="12sp"
+                android:backgroundTint="@color/statusSelected"
+                android:textColor="@color/white"
+                android:layout_marginEnd="4dp" />
+
+            <!-- Reject -->
+            <Button
+                android:id="@+id/RejectBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Reject"
+                android:textSize="12sp"
+                android:backgroundTint="@color/statusRejected"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 </androidx.cardview.widget.CardView>
